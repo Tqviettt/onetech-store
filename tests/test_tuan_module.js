@@ -447,6 +447,34 @@ async function runTests() {
     assert(spRes.sanPhams.length > 0, `Tìm thấy ${spRes.sanPhams.length} model sản phẩm`);
     assert(spRes.sanPhams[0].soLuongTon !== undefined, 'Sản phẩm có thuộc tính soLuongTon');
 
+    // Test Soft Delete & ObjectId validation (PR #18)
+    let errIdInvalid = null;
+    try {
+      await SanPhamService.deleteSanPham('invalid_id_123');
+    } catch (e) {
+      errIdInvalid = e;
+    }
+    assert(errIdInvalid !== null && errIdInvalid.statusCode === 400, 'Chặn xóa sản phẩm với ID không hợp lệ (400 Bad Request)');
+
+    const dmFirst = (await DanhMucService.getAllDanhMucs())[0];
+    const spTestXoa = await SanPhamService.createSanPham({
+      tenMay: 'Test Soft Delete PR18',
+      danhMuc: dmFirst._id,
+      hang: 'TestBrand',
+      giaBan: 15000000
+    });
+    const delRes = await SanPhamService.deleteSanPham(spTestXoa._id);
+    assert(delRes.success === true, 'Xóa mềm (Soft delete) sản phẩm thành công');
+
+    const spSauXoa = await SanPham.findById(spTestXoa._id);
+    assert(spSauXoa.status === false, 'Trạng thái sản phẩm được cập nhật thành status: false');
+
+    const spListSauXoa = await SanPhamService.getAllSanPhams({ search: 'Test Soft Delete PR18' });
+    assert(spListSauXoa.sanPhams.length === 0, 'Sản phẩm đã ẩn không xuất hiện trong getAllSanPhams');
+
+    // Dọn dẹp bản ghi test
+    await SanPham.findByIdAndDelete(spTestXoa._id);
+
     // 4. Máy IMEI
     const imeiRes = await MayImeiService.getAllImeis();
     assert(Array.isArray(imeiRes.imeis), 'MayImeiService.getAllImeis trả về mảng imeis');

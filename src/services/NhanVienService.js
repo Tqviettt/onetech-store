@@ -1,5 +1,6 @@
 const BaseService = require('./BaseService');
 const { NhanVien } = require('../models');
+const mongoose = require('mongoose');
 
 function formatName(str) {
   if (!str) return '';
@@ -35,11 +36,14 @@ class NhanVienService extends BaseService {
       filter.trangThai = { $ne: 'Nghỉ việc' }; // Mặc định không lấy NV đã nghỉ việc
     }
 
-    return await NhanVien.find(filter).select('-matKhau').sort({ createdAt: -1 });
+    return await NhanVien.find(filter).select('-matKhau').sort({ createdAt: -1 }).lean();
   }
 
   async getNhanVienDetail(id) {
-    const nhanVien = await NhanVien.findById(id).select('-matKhau');
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      throw this.createError('ID nhân viên không hợp lệ', 400);
+    }
+    const nhanVien = await NhanVien.findById(id).select('-matKhau').lean();
     if (!nhanVien) {
       throw this.createError('Không tìm thấy nhân viên', 404);
     }
@@ -78,6 +82,9 @@ class NhanVienService extends BaseService {
   }
 
   async updateNhanVien(id, payload = {}, currentUserId = null) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      throw this.createError('ID nhân viên không hợp lệ', 400);
+    }
     const { hoTen, sdt, diaChi, email, vaiTro, tenDangNhap, matKhau, trangThai } = payload;
 
     const nv = await NhanVien.findById(id);
@@ -114,6 +121,9 @@ class NhanVienService extends BaseService {
   }
 
   async deleteNhanVien(id, currentUserId = null) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      throw this.createError('ID nhân viên không hợp lệ', 400);
+    }
     if (currentUserId && id.toString() === currentUserId.toString()) {
       throw this.createError('Bạn không thể tự xóa tài khoản của chính mình!', 400);
     }

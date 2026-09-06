@@ -130,9 +130,9 @@ const seedData = async () => {
     ]);
 
     // -------------------------------------------------------------
-    // 2. DANH MỤC SẢN PHẨM & PHÂN LOẠI (9 Danh mục phân bố đa dạng)
+    // 2. DANH MỤC SẢN PHẨM & PHÂN LOẠI (8 Danh mục chuẩn)
     // -------------------------------------------------------------
-    console.log('[Seed] 2. Khởi tạo 9 Danh mục Hàng hóa phân bố phong phú...');
+    console.log('[Seed] 2. Khởi tạo 8 Danh mục Hàng hóa chuẩn...');
     const [
       dmDienThoai,
       dmTablet,
@@ -141,18 +141,16 @@ const seedData = async () => {
       dmAmThanh,
       dmPhuKienSacCap,
       dmLinhKien,
-      dmMayCuTradeIn,
-      dmGamingGear
+      dmMayCuTradeIn
     ] = await DanhMuc.insertMany([
       { tenDanhMuc: 'Điện thoại thông minh (Smartphones)', moTa: 'Điện thoại iPhone, Samsung, Xiaomi quản lý theo từng IMEI vật lý', status: true },
       { tenDanhMuc: 'Máy tính bảng (iPad & Tablets)', moTa: 'iPad Pro, iPad Air, Galaxy Tab cao cấp quản lý theo số IMEI', status: true },
-      { tenDanhMuc: 'Laptop & MacBook cao cấp', moTa: 'MacBook M2, M3 và Laptop Ultrabook mỏng nhẹ quản lý theo Serial', status: true },
+      { tenDanhMuc: 'Laptop & MacBook', moTa: 'MacBook M2, M3 và Laptop Ultrabook mỏng nhẹ quản lý theo Serial', status: true },
       { tenDanhMuc: 'Đồng hồ thông minh (Smartwatches)', moTa: 'Apple Watch Series 9, Ultra 2, Galaxy Watch 6 quản lý theo Serial', status: true },
       { tenDanhMuc: 'Thiết bị Âm thanh & Tai nghe', moTa: 'AirPods Pro, Galaxy Buds, Loa di động quản lý theo số lượng phụ kiện', status: true },
       { tenDanhMuc: 'Phụ kiện Cáp, Sạc & Ốp lưng', moTa: 'Củ sạc nhanh 20W/45W, Cáp Type-C, Ốp lưng MagSafe, Kính cường lực', status: true },
       { tenDanhMuc: 'Linh kiện sửa chữa & Thay thế', moTa: 'Màn hình OLED, Pin dung lượng cao, Camera bóc máy trung tâm bảo hành', status: true },
-      { tenDanhMuc: 'Máy cũ - Thu cũ đổi mới (Trade-in)', moTa: 'Điện thoại qua sử dụng, máy Likenew 99% tuyển chọn có bảo hành', status: true },
-      { tenDanhMuc: 'Đồ chơi Công nghệ & Gaming Gear', moTa: 'Phụ kiện Gaming, tay cầm chơi game (Danh mục mẫu chưa có hàng để đối chiếu)', status: true }
+      { tenDanhMuc: 'Máy cũ - Thu cũ đổi mới (Trade-in)', moTa: 'Điện thoại qua sử dụng, máy Likenew 99% tuyển chọn có bảo hành', status: true }
     ]);
 
     // -------------------------------------------------------------

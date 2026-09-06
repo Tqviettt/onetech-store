@@ -5,6 +5,7 @@ const ctDonDatHangNCCSchema = new mongoose.Schema({
   sanPham: { type: mongoose.Schema.Types.ObjectId, ref: 'SanPham', required: true },
   soLuong: { type: Number, required: true, min: 1 },
   donGiaDuKien: { type: Number, required: true, min: 0 },
+  mauSac: { type: String, default: '' },
   soLuongDaNhan: { type: Number, default: 0, min: 0 },
   ghiChu: { type: String, default: '' }
 }, {

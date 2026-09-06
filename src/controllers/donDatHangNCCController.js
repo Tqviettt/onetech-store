@@ -37,9 +37,9 @@ class DonDatHangNCCController extends BaseController {
   // POST /api/don-dat-hang-ncc
   async create(req, res) {
     try {
-      const sessionUser = req.session ? req.session.user : null;
+      const sessionUser = (req.session && req.session.user) ? req.session.user : (req.user ? req.user : null);
       const result = await DonDatHangNCCService.taoDonDatHang(req.body, sessionUser);
-      return this.sendSuccess(res, result, `Tạo đơn đặt hàng NCC ${result.donDatHangNCC.maDDH} thành công`, 201);
+      return this.sendSuccess(res, result, `Tạo đơn đặt hàng NCC ${result.donDatHangNCC.maDDH || ''} thành công`, 201);
     } catch (error) {
       return this.handleError(res, error, 'Lỗi khi tạo đơn đặt hàng NCC');
     }

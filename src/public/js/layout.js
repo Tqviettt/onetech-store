@@ -476,6 +476,7 @@ function renderSidebarAndNavbar(user) {
   // Khôi phục trạng thái từ localStorage
   if (sidebar && localStorage.getItem('sidebarCollapsed') === 'true') {
     sidebar.classList.add('collapsed');
+    document.body.classList.add('sidebar-collapsed');
     updateCollapseIcon(true);
   }
 
@@ -484,6 +485,7 @@ function renderSidebarAndNavbar(user) {
       e.preventDefault();
       e.stopPropagation();
       const isCollapsed = sidebar.classList.toggle('collapsed');
+      document.body.classList.toggle('sidebar-collapsed', isCollapsed);
       updateCollapseIcon(isCollapsed);
       localStorage.setItem('sidebarCollapsed', isCollapsed);
     });
@@ -751,31 +753,28 @@ window.enhanceSelect = enhanceSelect;
 // CURRENCY INPUT FORMATTING
 // =========================================
 function applyCurrencyFormat() {
-  document.querySelectorAll('input.format-currency').forEach(input => {
-    // Ngăn chặn format nhiều lần nếu đã gắn
-    if (input.dataset.currencyEnhanced) return;
-    input.dataset.currencyEnhanced = 'true';
-
-    input.addEventListener('input', function(e) {
-      // Chỉ giữ lại số
-      let value = this.value.replace(/[^\d]/g, '');
-      if (value) {
-        this.value = parseInt(value, 10).toLocaleString('vi-VN');
-      } else {
-        this.value = '';
-      }
-    });
-
-    // Nếu đã có giá trị sẵn (VD edit form), format ngay
-    if (input.value) {
-      let value = input.value.replace(/[^\d]/g, '');
-      if (value) {
-        input.value = parseInt(value, 10).toLocaleString('vi-VN');
-      }
+  document.querySelectorAll('input.format-currency, input.gia-input, input[data-currency-mask]').forEach(input => {
+    if (typeof window.maskCurrencyInput === 'function' && input.value) {
+      window.maskCurrencyInput(input);
     }
   });
 }
 window.applyCurrencyFormat = applyCurrencyFormat;
+
+// Global event delegation for all currency inputs
+document.addEventListener('input', function(e) {
+  const target = e.target;
+  if (!target || target.tagName !== 'INPUT') return;
+  if (
+    target.classList.contains('format-currency') ||
+    target.classList.contains('gia-input') ||
+    target.dataset.currencyMask === 'true'
+  ) {
+    if (typeof window.maskCurrencyInput === 'function') {
+      window.maskCurrencyInput(target);
+    }
+  }
+});
 
 document.addEventListener('DOMContentLoaded', () => {
   initLayout();

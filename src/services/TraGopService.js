@@ -135,14 +135,15 @@ class TraGopService extends BaseService {
         soTienKy = hopDong.soTienTraGop - hopDong.soTienMoiKy * (hopDong.soKy - 1);
       }
 
-      const daThu = i <= hopDong.soKyDaThu;
-      let trangThai = 'Chua thu';
+      let trangThaiText = 'Chưa thu';
       let trangThaiHienThi = 'Chưa thu';
       if (daThu) {
         trangThai = 'Da thu';
+        trangThaiText = 'Đã thu';
         trangThaiHienThi = 'Đã thu';
       } else if (ngayDenHan < new Date()) {
         trangThai = 'Qua han';
+        trangThaiText = 'Quá hạn';
         trangThaiHienThi = 'Quá hạn';
       }
 
@@ -153,6 +154,7 @@ class TraGopService extends BaseService {
         soTien: soTienKy,
         daThu,
         trangThai,
+        trangThaiText,
         trangThaiHienThi
       });
     }

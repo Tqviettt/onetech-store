@@ -91,6 +91,33 @@
   </div>
 </div>
 
+<!-- Modal xác nhận xóa sản phẩm -->
+<div class="modal fade" id="modalXacNhanXoa" tabindex="-1" aria-labelledby="modalXacNhanXoaLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-danger text-white border-0">
+        <h5 class="modal-title fw-bold" id="modalXacNhanXoaLabel">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>Xác nhận xóa sản phẩm
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng"></button>
+      </div>
+      <div class="modal-body py-4 text-center">
+        <p class="mb-1">Bạn có chắc muốn xóa sản phẩm</p>
+        <p class="fw-bold fs-5 text-danger" id="modalTenSanPham"></p>
+        <p class="text-muted small mb-0">Sản phẩm sẽ bị ẩn khỏi danh sách, dữ liệu vẫn được giữ lại.</p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center gap-3">
+        <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">
+          <i class="bi bi-x-lg me-1"></i>Hủy xóa
+        </button>
+        <button type="button" class="btn btn-danger px-4" id="btnXacNhanXoa">
+          <i class="bi bi-trash3-fill me-1"></i>Xác nhận xóa
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Bootstrap 5 JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="/js/api.js"></script>
