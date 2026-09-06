@@ -135,6 +135,8 @@ class TraGopService extends BaseService {
         soTienKy = hopDong.soTienTraGop - hopDong.soTienMoiKy * (hopDong.soKy - 1);
       }
 
+      const daThu = i <= hopDong.soKyDaThu;
+      let trangThai = 'Chua thu';
       let trangThaiText = 'Chưa thu';
       let trangThaiHienThi = 'Chưa thu';
       if (daThu) {
