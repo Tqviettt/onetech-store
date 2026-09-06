@@ -27,10 +27,16 @@ const hoaDonSchema = new mongoose.Schema({
   toObject: { virtuals: true }
 });
 
-// Auto sinh số hóa đơn nếu chưa có
+// Auto sinh số hóa đơn và tính số tiền thực thanh toán nếu chưa có
 hoaDonSchema.pre('save', function(next) {
   if (!this.soHD) {
     this.soHD = 'HD' + Date.now().toString().slice(-8);
+  }
+  if (!this.soTienThanhToan || this.soTienThanhToan === 0) {
+    const tongTien = this.tongTien || 0;
+    const tienCoc = this.tienCocDaTru || 0;
+    const tienGiam = (this.soTienGiam || 0) + (this.khuyenMaiGiam || 0);
+    this.soTienThanhToan = Math.max(0, tongTien - tienCoc - tienGiam);
   }
   next();
 });

@@ -16,6 +16,42 @@ class KhachHangService extends BaseService {
   }
 
   async getAllKhachHangs(query = {}) {
+    // Tự động tính tổng chi tiêu thực tế từ các Hóa đơn hợp lệ của từng khách hàng
+    try {
+      const spendingStats = await HoaDon.aggregate([
+        { $match: { trangThai: { $ne: 'Da huy' } } },
+        {
+          $group: {
+            _id: '$khachHang',
+            tongChiTieu: {
+              $sum: {
+                $cond: [
+                  { $gt: ['$soTienThanhToan', 0] },
+                  '$soTienThanhToan',
+                  { $subtract: [{ $subtract: ['$tongTien', { $ifNull: ['$tienCocDaTru', 0] }] }, { $ifNull: ['$soTienGiam', 0] }] }
+                ]
+              }
+            }
+          }
+        }
+      ]);
+
+      if (spendingStats.length > 0) {
+        await Promise.all(spendingStats.map(stat => {
+          if (!stat._id) return Promise.resolve();
+          const tong = Math.max(0, stat.tongChiTieu || 0);
+          let hang = 'Đồng';
+          if (tong >= 50000000) hang = 'Kim Cương';
+          else if (tong >= 30000000) hang = 'Vàng';
+          else if (tong >= 10000000) hang = 'Bạc';
+
+          return KhachHang.findByIdAndUpdate(stat._id, { tongChiTieu: tong, hangThanhVien: hang });
+        }));
+      }
+    } catch (err) {
+      console.error('Lỗi tính tổng chi tiêu khách hàng:', err);
+    }
+
     const { search } = query;
     const filter = {};
 

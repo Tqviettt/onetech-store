@@ -809,8 +809,10 @@ async function loadInvoiceList() {
 
   tbody.innerHTML = hoaDons.map(hd => {
     const khName = hd.khachHang ? hd.khachHang.hoTen : 'Khách vãng lai';
-    const nvName = hd.nhanVien ? hd.nhanVien.hoTen : 'Hệ thống';
-    const tienThucThu = hd.soTienThanhToan !== undefined ? hd.soTienThanhToan : (hd.tongTien - (hd.tienCocDaTru || 0) - (hd.soTienGiam || 0));
+    const tienGoc = hd.tongTien || 0;
+    const tienCoc = hd.tienCocDaTru || 0;
+    const tienGiam = (hd.soTienGiam || 0) + (hd.khuyenMaiGiam || 0);
+    const tienThucThu = (hd.soTienThanhToan && hd.soTienThanhToan > 0) ? hd.soTienThanhToan : Math.max(0, tienGoc - tienCoc - tienGiam);
     return `
       <tr>
         <td class="fw-bold font-monospace text-primary">${hd.soHD}</td>
