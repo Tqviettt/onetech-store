@@ -138,14 +138,14 @@ function addMayRow(defaultSP = '', defaultMau = '', defaultDL = '', defaultGia =
   rowMayCounter++;
   const container = document.getElementById('mayRowsContainer');
   const spOptions = dsSanPham.map(sp => 
-    `<option value="${sp._id}" ${sp._id === defaultSP ? 'selected' : ''}>${escapeHtml(sp.tenMay)}</option>`
+    `<option value="${sp._id}" data-gia="${sp.giaGoc || 0}" data-dl="${escapeHtml(sp.dungLuong || '')}" ${sp._id === defaultSP ? 'selected' : ''}>${escapeHtml(sp.tenMay)}</option>`
   ).join('');
 
   const rowHtml = `
     <div class="row g-2 align-items-end p-2 bg-light rounded border" id="mayRow_${rowMayCounter}">
       <div class="col-12 col-md-3">
         <label class="form-label small fw-semibold">Model Sản phẩm</label>
-        <select class="form-select form-select-sm select-may-sp" required>
+        <select class="form-select form-select-sm select-may-sp" onchange="autoFillGiaNhap(this)">
           <option value="">-- Chọn máy --</option>
           ${spOptions}
         </select>
@@ -160,11 +160,11 @@ function addMayRow(defaultSP = '', defaultMau = '', defaultDL = '', defaultGia =
       </div>
       <div class="col-6 col-md-2">
         <label class="form-label small fw-semibold">Giá nhập (VNĐ)</label>
-        <input type="text" class="form-control form-control-sm format-currency input-may-gia" placeholder="0" oninput="maskCurrencyInput(this); recalcTotalPreview()" value="${defaultGia}" required>
+        <input type="text" class="form-control form-control-sm format-currency input-may-gia" placeholder="0" oninput="maskCurrencyInput(this); recalcTotalPreview()" value="${defaultGia}">
       </div>
-      <div class="col-6 col-md-2">
-        <label class="form-label small fw-semibold">Số IMEI (15 số)</label>
-        <input type="text" class="form-control form-control-sm font-monospace input-may-imei" placeholder="IMEI 15 ký tự" value="${escapeHtml(defaultImei)}" required>
+      <div class="col-12 col-md-3">
+        <label class="form-label small fw-semibold">Mã IMEI</label>
+        <input type="text" class="form-control form-control-sm input-may-imei" placeholder="Quét hoặc nhập mã..." value="${escapeHtml(defaultImei)}">
       </div>
       <div class="col-12 col-md-1 text-end">
         <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow('mayRow_${rowMayCounter}')">
@@ -177,10 +177,39 @@ function addMayRow(defaultSP = '', defaultMau = '', defaultDL = '', defaultGia =
   recalcTotalPreview();
 }
 
+function autoFillGiaNhap(selectEl) {
+  if (!selectEl) return;
+  const opt = selectEl.options[selectEl.selectedIndex];
+  if (opt && opt.value) {
+    const giaGoc = parseFloat(opt.getAttribute('data-gia')) || 0;
+    const dungLuong = opt.getAttribute('data-dl') || '';
+    
+    const row = selectEl.closest('.row');
+    if (row) {
+      const inputGia = row.querySelector('.input-may-gia');
+      const inputDL = row.querySelector('.input-may-dl');
+      
+      if (inputGia && giaGoc > 0) {
+        // Format bằng dấu chấm phân cách hàng nghìn (VD: 20.000.000)
+        inputGia.value = String(giaGoc).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+      }
+      if (inputDL) {
+        inputDL.value = dungLuong;
+      }
+      
+      if (typeof recalcTotalPreview === 'function') {
+        recalcTotalPreview();
+      }
+    }
+  }
+}
+
 // LOGIC NHẬP HÀNG LOẠT IMEI
 function openBulkImportModal() {
   const bulkInputSP = document.getElementById('bulkInputSP');
-  bulkInputSP.innerHTML = '<option value="">-- Chọn máy --</option>' + dsSanPham.map(sp => `<option value="${sp._id}">${escapeHtml(sp.tenMay)}</option>`).join('');
+  bulkInputSP.innerHTML = '<option value="">-- Chọn máy --</option>' + dsSanPham.map(sp => 
+    `<option value="${sp._id}" data-gia="${sp.giaGoc || 0}" data-dl="${escapeHtml(sp.dungLuong || '')}">${escapeHtml(sp.tenMay)}</option>`
+  ).join('');
   document.getElementById('bulkInputMau').value = '';
   document.getElementById('bulkInputDL').value = '';
   document.getElementById('bulkInputGia').value = '';
@@ -190,6 +219,26 @@ function openBulkImportModal() {
   modal.show();
 }
 
+function autoFillBulkGiaNhap(selectEl) {
+  if (!selectEl) return;
+  const opt = selectEl.options[selectEl.selectedIndex];
+  if (opt && opt.value) {
+    const giaGoc = parseFloat(opt.getAttribute('data-gia')) || 0;
+    const dungLuong = opt.getAttribute('data-dl') || '';
+    
+    const inputGia = document.getElementById('bulkInputGia');
+    const inputDL = document.getElementById('bulkInputDL');
+    
+    if (inputGia) {
+      // bulkInputGia is type="number" so we set raw number, not formatted string
+      inputGia.value = giaGoc > 0 ? giaGoc : '';
+    }
+    if (inputDL) {
+      inputDL.value = dungLuong;
+    }
+  }
+}
+
 function processBulkImport() {
   const maSP = document.getElementById('bulkInputSP').value;
   const mauSac = document.getElementById('bulkInputMau').value;
@@ -197,13 +246,13 @@ function processBulkImport() {
   const giaNhap = document.getElementById('bulkInputGia').value;
   const rawText = document.getElementById('bulkInputImeis').value;
   
-  if (!maSP) return api.toast('Vui lòng chọn Model máy chung', 'warning');
-  if (!giaNhap || Number(giaNhap) <= 0) return api.toast('Vui lòng nhập giá nhập', 'warning');
-  if (!rawText.trim()) return api.toast('Vui lòng nhập ít nhất 1 IMEI', 'warning');
+  if (!maSP) return api.showToast('Vui lòng chọn Model máy chung', 'warning');
+  if (!giaNhap || Number(giaNhap) <= 0) return api.showToast('Vui lòng nhập giá nhập', 'warning');
+  if (!rawText.trim()) return api.showToast('Vui lòng nhập ít nhất 1 IMEI', 'warning');
   
   // Tách IMEI bằng dấu phẩy hoặc xuống dòng
   const imeis = rawText.split(/[\n,]+/).map(i => i.trim()).filter(i => i.length > 0);
-  if (imeis.length === 0) return api.toast('Không tìm thấy IMEI hợp lệ', 'warning');
+  if (imeis.length === 0) return api.showToast('Không tìm thấy IMEI hợp lệ', 'warning');
   
   bootstrap.Modal.getInstance(document.getElementById('modalBulkImport')).hide();
   
@@ -212,7 +261,7 @@ function processBulkImport() {
     addMayRow(maSP, mauSac, dungLuong, giaNhap, imei);
   });
   
-  api.toast(`Đã tạo thành công ${imeis.length} dòng máy!`, 'success');
+  api.showToast(`Đã tạo thành công ${imeis.length} dòng máy!`, 'success');
 }
 
 let rowPkCounter = 0;
@@ -225,18 +274,18 @@ function addPhuKienRow() {
     <div class="row g-2 align-items-end p-2 bg-light rounded border" id="pkRow_${rowPkCounter}">
       <div class="col-12 col-md-4">
         <label class="form-label small fw-semibold">Tên Phụ Kiện</label>
-        <select class="form-select form-select-sm select-pk" required>
+        <select class="form-select form-select-sm select-pk">
           <option value="">-- Chọn phụ kiện --</option>
           ${pkOptions}
         </select>
       </div>
       <div class="col-6 col-md-3">
         <label class="form-label small fw-semibold">Giá nhập (VNĐ)</label>
-        <input type="text" class="form-control form-control-sm format-currency input-pk-gia" placeholder="0" oninput="maskCurrencyInput(this); recalcTotalPreview()" required>
+        <input type="text" class="form-control form-control-sm format-currency input-pk-gia" placeholder="0" oninput="maskCurrencyInput(this); recalcTotalPreview()">
       </div>
       <div class="col-6 col-md-3">
         <label class="form-label small fw-semibold">Số lượng nhập</label>
-        <input type="number" class="form-control form-control-sm input-pk-sl" placeholder="1" min="1" value="1" oninput="recalcTotalPreview()" required>
+        <input type="number" class="form-control form-control-sm input-pk-sl" placeholder="1" min="1" value="1" oninput="recalcTotalPreview()">
       </div>
       <div class="col-12 col-md-2 text-end">
         <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow('pkRow_${rowPkCounter}')">
@@ -272,6 +321,10 @@ function recalcTotalPreview() {
 async function handleCreatePhieuNhap(e) {
   e.preventDefault();
   const maNCC = document.getElementById('inputNCC').value;
+  if (!maNCC) {
+    return api.showToast('Vui lòng chọn Nhà Cung Cấp', 'warning');
+  }
+  
   const hinhThucThanhToan = document.getElementById('inputHinhThuc').value;
   const ghiChu = document.getElementById('inputGhiChu').value.trim();
 

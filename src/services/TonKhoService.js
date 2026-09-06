@@ -36,9 +36,11 @@ class TonKhoService extends BaseService {
 
     let targetKhoId = khoId;
     if (!targetKhoId) {
-      const defaultKho = await Kho.findOne().session(session);
+      let defaultKho = await Kho.findOne().session(session);
       if (!defaultKho) {
-        throw this.createError('Hệ thống chưa có Kho nào để lưu trữ', 400);
+        // Tự động tạo kho mặc định nếu chưa có kho nào trong hệ thống
+        const created = await Kho.create([{ tenKho: 'Kho Chính', diaChi: 'Kho mặc định' }], session ? { session } : {});
+        defaultKho = created[0];
       }
       targetKhoId = defaultKho._id;
     }

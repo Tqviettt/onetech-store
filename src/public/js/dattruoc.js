@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       e.preventDefault();
       const khachHang = createKhachHangSelect ? createKhachHangSelect.value : '';
       const sanPham = createSanPhamSelect ? createSanPhamSelect.value : '';
-      const soTienCoc = Number((document.getElementById('createSoTienCoc')?.value || '').replace(/[^\\d]/g, '')) || 0;
+      const soTienCoc = Number((document.getElementById('createSoTienCoc')?.value || '').replace(/\D/g, '')) || 0;
       const hinhThuc = document.getElementById('createHinhThucSelect')?.value || 'Tien mat';
       const hanLay = document.getElementById('createHanLay')?.value;
       const imei = document.getElementById('createImei')?.value.trim();

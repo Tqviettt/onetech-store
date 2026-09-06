@@ -5,6 +5,8 @@ const sanPhamSchema = new mongoose.Schema({
   tenMay: { type: String, required: true, trim: true },
   hang: { type: String, trim: true },
   giaBan: { type: Number, required: true, default: 0, min: 0 },
+  giaGoc: { type: Number, default: 0, min: 0 },
+  dungLuong: { type: String, trim: true, default: '' },
   soThangBH: { type: Number, default: 12, min: 0 }, // Số tháng bảo hành (theo ràng buộc brief)
   hinhAnh: { type: String, default: '' },
   moTa: { type: String, default: '' },

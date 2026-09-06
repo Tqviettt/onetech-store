@@ -139,7 +139,7 @@ function addDongChiTiet() {
   
   let spOptions = '<option value="">-- Chọn Model --</option>';
   sanPhamList.forEach(sp => {
-    spOptions += `<option value="${sp._id}" data-gia="${sp.giaBan * 0.8}">${sp.tenMay}</option>`;
+    spOptions += `<option value="${sp._id}" data-gia="${sp.giaGoc || 0}">${sp.tenMay}</option>`;
   });
   
   tr.innerHTML = `
@@ -365,13 +365,20 @@ async function handleSaveQuickSP(e) {
   const danhMuc = document.getElementById('quickDanhMuc').value;
   const giaBanInput = document.getElementById('quickGiaBan');
   const giaBan = giaBanInput ? parseCurrencyValue(giaBanInput.value) : 0;
+  const giaGocInput = document.getElementById('quickGiaGoc');
+  const giaGoc = giaGocInput ? parseCurrencyValue(giaGocInput.value) : 0;
 
   if (!tenMay || !danhMuc) {
     api.showToast('Vui lòng điền Tên máy và Chọn danh mục', 'warning');
     return;
   }
+  if (giaBan <= giaGoc) {
+    api.showToast('Giá bán niêm yết phải lớn hơn Giá gốc', 'warning');
+    if (giaBanInput) giaBanInput.focus();
+    return;
+  }
 
-  const res = await api.post('/san-pham', { tenMay, hang, danhMuc, giaBan });
+  const res = await api.post('/san-pham', { tenMay, hang, danhMuc, giaBan, giaGoc });
   if (res.success && res.data) {
     api.showToast('Thêm Model Sản Phẩm mới thành công!', 'success');
     
@@ -393,7 +400,7 @@ async function handleSaveQuickSP(e) {
       const currentVal = sel.value;
       let spOptions = '<option value="">-- Chọn Model --</option>';
       sanPhamList.forEach(sp => {
-        spOptions += `<option value="${sp._id}" data-gia="${sp.giaBan * 0.8}">${sp.tenMay}</option>`;
+        spOptions += `<option value="${sp._id}" data-gia="${sp.giaGoc || 0}">${sp.tenMay}</option>`;
       });
       sel.innerHTML = spOptions;
       if (currentVal) sel.value = currentVal;

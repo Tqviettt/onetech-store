@@ -36,9 +36,14 @@
           <div class="card-custom p-4">
             <form id="sanPhamForm">
               <div class="row g-3">
-                <div class="col-12 col-md-8">
+                <div class="col-12 col-md-5">
                   <label class="form-label">Tên sản phẩm / Model máy <span class="text-danger">*</span></label>
-                  <input type="text" id="inputTenMay" class="form-control" placeholder="VD: iPhone 15 Pro Max 256GB" required>
+                  <input type="text" id="inputTenMay" class="form-control" placeholder="VD: iPhone 15 Pro Max" required>
+                </div>
+
+                <div class="col-12 col-md-3">
+                  <label class="form-label">Dung lượng</label>
+                  <input type="text" id="inputDungLuong" class="form-control" placeholder="VD: 256GB">
                 </div>
 
                 <div class="col-12 col-md-4">
@@ -54,8 +59,13 @@
                 </div>
 
                 <div class="col-12 col-md-4">
+                  <label class="form-label">Giá gốc (VNĐ) <span class="text-danger">*</span></label>
+                  <input type="text" id="inputGiaGoc" class="format-currency form-control" placeholder="VD: 20000000" required inputmode="numeric">
+                </div>
+
+                <div class="col-12 col-md-4">
                   <label class="form-label">Giá bán niêm yết (VNĐ) <span class="text-danger">*</span></label>
-                  <input type="text" id="inputGiaBan" class="format-currency form-control" placeholder="VD: 29990000" required inputmode="numeric">
+                  <input type="text" id="inputGiaBan" class="format-currency form-control" placeholder="VD: 25000000" required inputmode="numeric">
                   <div class="invalid-feedback">Hãy nhập mức giá &gt;= 0</div>
                 </div>
 

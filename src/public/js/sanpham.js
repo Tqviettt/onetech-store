@@ -198,8 +198,10 @@ async function initSanPhamForm() {
     if (res.success && res.sanPham) {
       const sp = res.sanPham;
       document.getElementById('inputTenMay').value = sp.tenMay || '';
+      document.getElementById('inputDungLuong').value = sp.dungLuong || '';
       document.getElementById('selectDanhMuc').value = sp.danhMuc?._id || sp.danhMuc || '';
       document.getElementById('inputHang').value = sp.hang || '';
+      document.getElementById('inputGiaGoc').value = sp.giaGoc || '';
       document.getElementById('inputGiaBan').value = sp.giaBan || '';
       document.getElementById('inputSoThangBH').value = sp.soThangBH || 12;
       document.getElementById('inputMoTa').value = sp.moTa || '';
@@ -211,40 +213,51 @@ async function initSanPhamForm() {
   // 3. Xử lý submit form
   const form = document.getElementById('sanPhamForm');
   const inputGiaBan = document.getElementById('inputGiaBan');
+  const inputGiaGoc = document.getElementById('inputGiaGoc');
 
   // Chỉ cho nhập số vào ô giá bán (chặn chữ và ký tự đặc biệt)
-  if (inputGiaBan) {
-    inputGiaBan.addEventListener('keypress', (e) => {
-      if (!/[0-9]/.test(e.key)) {
-        e.preventDefault();
-      }
-    });
-
-    inputGiaBan.addEventListener('paste', (e) => {
-      const pasted = (e.clipboardData || window.clipboardData).getData('text');
-      if (!/^\d+$/.test(pasted.replace(/[.,\s]/g, ''))) {
-        e.preventDefault();
-      }
-    });
-  }
+  [inputGiaBan, inputGiaGoc].forEach(el => {
+    if (el) {
+      el.addEventListener('keypress', (e) => {
+        if (!/[0-9]/.test(e.key)) {
+          e.preventDefault();
+        }
+      });
+  
+      el.addEventListener('paste', (e) => {
+        const pasted = (e.clipboardData || window.clipboardData).getData('text');
+        if (!/^\d+$/.test(pasted.replace(/[.,\s]/g, ''))) {
+          e.preventDefault();
+        }
+      });
+    }
+  });
 
   if (form) {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
       const giaBanRaw = Number((document.getElementById('inputGiaBan').value || '').replace(/[^\d]/g, ''));
+      const giaGocRaw = Number((document.getElementById('inputGiaGoc').value || '').replace(/[^\d]/g, ''));
 
       // Validate giá bán phải > 0
       if (!giaBanRaw || giaBanRaw <= 0) {
-        showToast('Hãy nhập mức giá >= 0', 'warning');
+        showToast('Hãy nhập mức giá bán >= 0', 'warning');
+        document.getElementById('inputGiaBan').focus();
+        return;
+      }
+      if (giaBanRaw <= giaGocRaw) {
+        showToast('Giá bán niêm yết phải lớn hơn Giá gốc', 'warning');
         document.getElementById('inputGiaBan').focus();
         return;
       }
 
       const body = {
         tenMay: document.getElementById('inputTenMay').value.trim(),
+        dungLuong: document.getElementById('inputDungLuong').value.trim(),
         danhMuc: document.getElementById('selectDanhMuc').value,
         hang: document.getElementById('inputHang').value.trim(),
+        giaGoc: giaGocRaw,
         giaBan: giaBanRaw,
         soThangBH: Number(document.getElementById('inputSoThangBH').value) || 12,
         moTa: document.getElementById('inputMoTa').value.trim()

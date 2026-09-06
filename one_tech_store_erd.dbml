@@ -1,4 +1,6 @@
 // ONE TECH STORE - ERD (DBML)
+// Cách xem sơ đồ: mở https://dbdiagram.io -> New Diagram -> dán toàn bộ nội dung file này vào
+// Đã bỏ bảng DOITACTAICHINH (bên thứ 3) theo quyết định trả góp nội bộ
 
 Table NHANVIEN {
   MaNV int [pk, increment]

@@ -224,3 +224,5 @@ function debounce(fn, delay = 300) {
 }
 
 window.debounce = debounce;
+api.showToast = showToast;
+window.showToast = showToast;

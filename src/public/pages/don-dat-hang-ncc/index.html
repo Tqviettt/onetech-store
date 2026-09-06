@@ -186,7 +186,7 @@
                     </button>
                   </div>
                 </div>
-                <div class="table-responsive" style="max-height: 420px; overflow-y: auto;">
+                <div style="overflow: visible;">
                   <table class="table table-sm align-middle" id="tableChiTietLap">
                     <thead class="table-light sticky-top">
                       <tr>
@@ -291,8 +291,12 @@
             </div>
           </div>
           <div class="mb-3">
+            <label class="form-label fw-semibold small">Giá Gốc (Giá Nhập Dự Kiến) <span class="text-danger">*</span></label>
+            <input type="text" class="form-control format-currency" id="quickGiaGoc" required placeholder="Ví dụ: 30.000.000">
+          </div>
+          <div class="mb-3">
             <label class="form-label fw-semibold small">Giá Bán Niêm Yết (đ) <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" id="quickGiaBan" required placeholder="Ví dụ: 45.000.000" oninput="maskCurrencyInput(this)">
+            <input type="text" class="form-control format-currency" id="quickGiaBan" required placeholder="Ví dụ: 45.000.000" oninput="maskCurrencyInput(this)">
           </div>
           <div class="text-end">
             <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Hủy</button>
