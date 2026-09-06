@@ -148,15 +148,14 @@
 <!-- Modal Tạo Phiếu Nhập Mới -->
 <div class="modal fade" id="modalCreateNhapKho" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-xl modal-dialog-scrollable">
-    <div class="modal-content card-custom">
+    <form id="formCreateNhapKho" onsubmit="handleCreatePhieuNhap(event)" class="modal-content card-custom">
       <div class="modal-header">
         <h5 class="modal-title fw-bold text-primary">
           <i class="bi bi-box-arrow-in-down me-1"></i> Lập Phiếu Nhập Kho Hàng Hóa
         </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <form id="formCreateNhapKho" onsubmit="handleCreatePhieuNhap(event)">
-        <div class="modal-body">
+      <div class="modal-body">
           <!-- Thông tin chung -->
           <div class="row g-3 mb-4 p-3 bg-light-subtle rounded border">
             <div class="col-12 col-md-4">
@@ -222,8 +221,8 @@
             </button>
           </div>
         </div>
-      </form>
-    </div>
+        </div>
+    </form>
   </div>
 </div>
 

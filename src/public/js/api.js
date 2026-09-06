@@ -134,6 +134,42 @@ function formatCurrency(amount) {
 }
 
 /**
+ * Tự động thêm dấu chấm . phân cách hàng nghìn khi người dùng gõ số tiền vào ô input
+ */
+function maskCurrencyInput(el) {
+  if (!el) return;
+  const cursor = el.selectionStart;
+  const oldLength = el.value ? el.value.length : 0;
+  const rawVal = String(el.value || '').replace(/\D/g, '');
+  if (!rawVal) {
+    el.value = '';
+    return;
+  }
+  const formatted = Number(rawVal).toLocaleString('vi-VN');
+  el.value = formatted;
+  const newLength = formatted.length;
+  if (cursor !== null && document.activeElement === el) {
+    const pos = Math.max(0, cursor + (newLength - oldLength));
+    try {
+      el.setSelectionRange(pos, pos);
+    } catch (err) {}
+  }
+}
+
+/**
+ * Trích xuất giá trị số thuần túy (bỏ hết dấu chấm .) từ ô input tiền tệ
+ */
+function parseCurrencyValue(val) {
+  if (typeof val === 'number') return val;
+  if (!val) return 0;
+  const cleaned = String(val).replace(/\./g, '').replace(/\D/g, '');
+  return Number(cleaned) || 0;
+}
+
+window.maskCurrencyInput = maskCurrencyInput;
+window.parseCurrencyValue = parseCurrencyValue;
+
+/**
  * Định dạng ngày giờ VN
  */
 function formatDate(dateStr) {

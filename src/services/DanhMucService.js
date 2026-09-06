@@ -7,7 +7,23 @@ class DanhMucService extends BaseService {
   }
 
   async getAllDanhMucs() {
-    const danhMucs = await DanhMuc.find().sort({ tenDanhMuc: 1 });
+    let danhMucs = await DanhMuc.find().sort({ tenDanhMuc: 1 });
+
+    // Tự động khởi tạo 8 danh mục chuẩn nếu CSDL trống
+    if (danhMucs.length === 0) {
+      const standardCategories = [
+        { tenDanhMuc: 'Điện thoại thông minh (Smartphones)', moTa: 'Điện thoại iPhone, Samsung, Xiaomi quản lý theo từng IMEI vật lý' },
+        { tenDanhMuc: 'Máy tính bảng (iPad & Tablets)', moTa: 'iPad Pro, iPad Air, Galaxy Tab cao cấp quản lý theo số IMEI' },
+        { tenDanhMuc: 'Laptop & MacBook', moTa: 'MacBook M2, M3 và Laptop Ultrabook mỏng nhẹ' },
+        { tenDanhMuc: 'Đồng hồ thông minh (Smartwatches)', moTa: 'Apple Watch Series 9, Ultra 2, Galaxy Watch 6' },
+        { tenDanhMuc: 'Thiết bị Âm thanh & Tai nghe', moTa: 'AirPods Pro, Galaxy Buds, Loa di động' },
+        { tenDanhMuc: 'Phụ kiện Cáp, Sạc & Ốp lưng', moTa: 'Củ sạc 20W/45W, Cáp Type-C, Ốp lưng MagSafe, Kính cường lực' },
+        { tenDanhMuc: 'Linh kiện sửa chữa & Thay thế', moTa: 'Màn hình OLED, Pin dung lượng cao, Camera bóc máy' },
+        { tenDanhMuc: 'Máy cũ - Thu cũ đổi mới (Trade-in)', moTa: 'Điện thoại qua sử dụng, máy Likenew 99% tuyển chọn' }
+      ];
+      await DanhMuc.insertMany(standardCategories);
+      danhMucs = await DanhMuc.find().sort({ tenDanhMuc: 1 });
+    }
 
     const [spCounts, pkCounts] = await Promise.all([
       SanPham.aggregate([{ $group: { _id: '$danhMuc', count: { $sum: 1 } } }]),

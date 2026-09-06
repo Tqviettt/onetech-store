@@ -389,3 +389,4 @@
 - [x] **Cuối Tuần 7:** Bộ kiểm thử tự động toàn dự án đạt 18 Test Suites (682 assertions) PASS 100%; kiểm tra phân quyền 6 vai trò không có lỗ hổng 403; Stress test 1.000+ IMEI và Concurrency Lock hoạt động hoàn hảo.
 - [ ] **Cuối Tuần 8:** Báo cáo QA Test Report đầy đủ; Kịch bản demo 5-7 phút trơn tru không lỗi; dữ liệu seed trực quan; sẵn sàng 100% bảo vệ đồ án xuất sắc.
 - [x] �� h?p nh?t c�c PR b? sung t�nh nang Khuy?n M�i, �?t h�ng NCC, v� trang qu?n tr? Admin c�ng chu?n ho� lu?ng .lean() v� Transaction Rollback.
+- [x] Da kiem tra va hop nhat PR #18 (sider fixed - Vu): Co dinh Sidebar (position: fixed) + co gian margin; Modal xac nhan & Soft Delete San pham; chuan hoa ObjectId, .lean(), va 20/20 Test Suites (785 assertions) PASS 100%.

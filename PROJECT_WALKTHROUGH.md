@@ -60,11 +60,12 @@ Hệ thống được tổ chức theo mô hình **Layered MVC kết hợp OOP S
 * **Giao diện Hiện đại & Hoạt ảnh mượt mà (`src/public/css/style.css`):**
   - Tích hợp bộ Keyframe Animations đồng bộ (`fadeInUp`, `slideDown`, `cardIn`, `logoSpin`, `bgFloat`...).
   - Thiết kế card phong cách glassmorphism, shadow đổ bóng tự nhiên, viền tinh tế và màu sắc gradient hiện đại.
-* **Hệ thống Điều hướng Thông minh (`src/public/js/layout.js`):**
-  - **Sidebar Thu gọn / Mở rộng (Collapsible Sidebar):** Hỗ trợ chuyển đổi trạng thái trên Desktop, ghi nhớ trạng thái người dùng qua `localStorage` (`sidebarCollapsed`).
+* **Hệ thống Điều hướng Thông minh (`src/public/js/layout.js` & `src/public/css/style.css`):**
+  - **Sidebar Cố định & Thu gọn / Mở rộng (Fixed Collapsible Sidebar):** Thiết lập `position: fixed` bám trọn viền trái màn hình với thanh cuộn ẩn siêu gọn (`scrollbar-width: none`), tự động điều chỉnh `margin-left` co giãn (260px khi mở / 68px khi thu gọn), ghi nhớ trạng thái qua `localStorage` (`sidebarCollapsed`) và responsive mượt mà trên mobile.
   - **Mobile Responsive Drawer:** Hỗ trợ menu trượt kèm lớp nền mờ `sidebar-overlay`, tự động đóng sidebar khi người dùng chọn chuyển trang trên thiết bị di động (< 992px).
   - **Top Navbar Đa năng:** Tích hợp đồng hồ thời gian thực (Live ticking clock), Avatar Initials theo họ tên và hiển thị Badge vai trò sắc nét.
   - **Universal Custom Dropdown Engine (`enhanceSelect()`):** Tự động chuyển đổi toàn bộ `<select>` HTML thành Custom Dropdown hiện đại, tích hợp icon ngữ nghĩa (danh mục, hãng, kho, vai trò...), ô tìm kiếm tùy chọn realtime và animation mượt mà.
+  - **Modal Xác nhận Xóa & Soft Delete Model Sản Phẩm (`src/public/pages/san-pham/`):** Tích hợp Modal Bootstrap `modalXacNhanXoa` phong cách hiện đại thay thế confirm thô sơ, hiệu ứng fade-out dòng tr sau khi ẩn và chuyển sang cơ chế Soft Delete (`status: false`) để bảo toàn lịch sử hóa đơn/IMEI.
 * **Màn hình Đăng nhập Trực quan (`src/public/pages/login.html`):**
   - Hiệu ứng floating background orbs, logo chuyển động xoay tròn nhẹ khi tương tác, form focus nổi bật.
   - Hàng badge tài khoản demo tương tác cao giúp đăng nhập nhanh 1-click cho 6 vai trò.

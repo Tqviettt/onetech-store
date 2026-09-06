@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const BaseService = require('./BaseService');
-const { DonDatHangNCC, CT_DonDatHangNCC, NhaCungCap, SanPham } = require('../models');
+const { DonDatHangNCC, CT_DonDatHangNCC, NhaCungCap, SanPham, NhanVien } = require('../models');
 
 /**
  * DonDatHangNCCService - Quản lý Đơn đặt hàng gửi Nhà Cung Cấp
@@ -28,19 +28,29 @@ class DonDatHangNCCService extends BaseService {
 
     const { page, limit, skip } = this.getPaginationOptions(query);
 
-    const [list, total] = await Promise.all([
+    const [list, total, choDuyetCount, dangGiaoCount, hoanThanhCount, huyCount] = await Promise.all([
       DonDatHangNCC.find(filter)
         .populate('nhaCungCap', 'tenNCC sdt diaChi')
         .populate('nhanVien', 'hoTen vaiTro tenDangNhap')
         .sort({ createdAt: -1 })
         .skip(skip).limit(limit)
         .lean(),
-      DonDatHangNCC.countDocuments(filter)
+      DonDatHangNCC.countDocuments(filter),
+      DonDatHangNCC.countDocuments({ trangThai: 'Cho duyet' }),
+      DonDatHangNCC.countDocuments({ trangThai: 'Dang giao' }),
+      DonDatHangNCC.countDocuments({ trangThai: 'Da nhan hang' }),
+      DonDatHangNCC.countDocuments({ trangThai: 'Da huy' })
     ]);
 
     return {
       donDatHangNCCs: list,
-      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) }
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+      stats: {
+        choDuyet: choDuyetCount,
+        dangGiao: dangGiaoCount,
+        hoanThanh: hoanThanhCount,
+        huy: huyCount
+      }
     };
   }
 
@@ -67,27 +77,39 @@ class DonDatHangNCCService extends BaseService {
    * @param {Object} payload { maNCC, maNV, danhSachSanPham: [{ maSP, soLuong, donGiaDuKien }], ngayDuKienGiao, ghiChu }
    */
   async taoDonDatHang(payload = {}, sessionUser = null) {
-    const { maNCC, maNV, danhSachSanPham = [], ngayDuKienGiao, ghiChu = '' } = payload;
+    const { maNCC, nhaCungCapId, maNV, danhSachSanPham = [], chiTiet = [], ngayDuKienGiao, ngayHenGiao, ghiChu = '', diaChiGiao = '', sdtNguoiGiao = '', cccdNguoiGiao = '' } = payload;
+    const finalNCC = maNCC || nhaCungCapId;
+    const finalNgayHenGiao = ngayDuKienGiao || ngayHenGiao;
+    const itemsList = danhSachSanPham.length > 0 ? danhSachSanPham : chiTiet;
 
-    const nhanVienId = maNV || (sessionUser ? sessionUser._id : null);
-    if (!maNCC) throw this.createError('Vui lòng chọn Nhà Cung Cấp', 400);
+    let nhanVienId = maNV || (sessionUser ? sessionUser._id : null);
+    if (!nhanVienId) {
+      const defaultNV = await NhanVien.findOne({ isActived: { $ne: false } }).sort({ createdAt: 1 });
+      if (defaultNV) {
+        nhanVienId = defaultNV._id;
+      } else {
+        throw this.createError('Vui lòng cung cấp mã nhân viên lập đơn', 400);
+      }
+    }
+    if (!finalNCC) throw this.createError('Vui lòng chọn Nhà Cung Cấp', 400);
     if (!nhanVienId) throw this.createError('Vui lòng cung cấp mã nhân viên lập đơn', 400);
-    if (!danhSachSanPham || danhSachSanPham.length === 0) {
+    if (!itemsList || itemsList.length === 0) {
       throw this.createError('Đơn đặt hàng phải có ít nhất 1 sản phẩm', 400);
     }
 
     // Kiểm tra NCC tồn tại
-    const ncc = await NhaCungCap.findById(maNCC);
+    const ncc = await NhaCungCap.findById(finalNCC);
     if (!ncc) throw this.createError('Nhà Cung Cấp không tồn tại', 404);
 
     // Validate & tính tổng tiền
     let tongTien = 0;
     const chiTietItems = [];
 
-    for (const item of danhSachSanPham) {
+    for (const item of itemsList) {
       const maSP = item.maSP || item.sanPham;
       const soLuong = parseInt(item.soLuong) || 1;
-      const donGiaDuKien = Number(item.donGiaDuKien) || 0;
+      const donGiaDuKien = Number(item.donGiaDuKien !== undefined ? item.donGiaDuKien : (item.donGiaNhap || 0)) || 0;
+      const mauSac = item.mauSac ? String(item.mauSac).trim() : '';
 
       if (!maSP) throw this.createError('Thiếu mã sản phẩm trong danh sách', 400);
 
@@ -99,39 +121,33 @@ class DonDatHangNCCService extends BaseService {
         sanPham: sp._id,
         soLuong,
         donGiaDuKien,
+        mauSac,
         soLuongDaNhan: 0
       });
     }
 
-    const session = await mongoose.startSession();
-    session.startTransaction();
-    try {
-      // Tạo đơn đặt hàng
-      const ddhArray = await DonDatHangNCC.create([{
-        nhaCungCap: maNCC,
-        nhanVien: nhanVienId,
-        ngayDuKienGiao: ngayDuKienGiao ? new Date(ngayDuKienGiao) : undefined,
-        tongTien,
-        trangThai: 'Cho duyet',
-        ghiChu
-      }], { session });
-      const ddh = ddhArray[0];
+    // Tạo đơn đặt hàng
+    const ddhArray = await DonDatHangNCC.create([{
+      nhaCungCap: finalNCC,
+      nhanVien: nhanVienId,
+      ngayDuKienGiao: finalNgayHenGiao ? new Date(finalNgayHenGiao) : undefined,
+      diaChiGiao: diaChiGiao.trim(),
+      sdtNguoiGiao: sdtNguoiGiao.trim(),
+      cccdNguoiGiao: cccdNguoiGiao.trim(),
+      tongTien,
+      trangThai: 'Cho duyet',
+      ghiChu
+    }]);
+    const ddh = ddhArray[0];
 
-      // Tạo chi tiết
-      const ctItems = chiTietItems.map(item => ({
-        ...item,
-        donDatHangNCC: ddh._id
-      }));
-      await CT_DonDatHangNCC.insertMany(ctItems, { session });
-      
-      await session.commitTransaction();
-      return await this.getChiTiet(ddh._id);
-    } catch (error) {
-      await session.abortTransaction();
-      throw error;
-    } finally {
-      session.endSession();
-    }
+    // Tạo chi tiết
+    const ctItems = chiTietItems.map(item => ({
+      ...item,
+      donDatHangNCC: ddh._id
+    }));
+    await CT_DonDatHangNCC.insertMany(ctItems);
+    
+    return await this.getChiTiet(ddh._id);
   }
 
   /**
@@ -195,49 +211,39 @@ class DonDatHangNCCService extends BaseService {
    * @param {Array} danhSachNhan - [{ sanPham, soLuongNhan }]
    */
   async doiSoatNhapKho(ddhId, danhSachNhan = []) {
-    const session = await mongoose.startSession();
-    session.startTransaction();
-    try {
-      const ddh = await DonDatHangNCC.findById(ddhId).session(session);
-      if (!ddh) throw this.createError('Không tìm thấy đơn đặt hàng NCC', 404);
+    const ddh = await DonDatHangNCC.findById(ddhId);
+    if (!ddh) throw this.createError('Không tìm thấy đơn đặt hàng NCC', 404);
 
-      if (ddh.trangThai === 'Da huy') {
-        throw this.createError('Đơn đặt hàng đã bị hủy', 400);
-      }
-
-      const chiTiet = await CT_DonDatHangNCC.find({ donDatHangNCC: ddhId }).session(session);
-
-      for (const item of danhSachNhan) {
-        const maSP = item.sanPham || item.maSP;
-        const soLuongNhan = parseInt(item.soLuongNhan) || 0;
-
-        const ct = chiTiet.find(c => c.sanPham.toString() === maSP.toString());
-        if (ct) {
-          ct.soLuongDaNhan += soLuongNhan;
-          await ct.save({ session });
-        }
-      }
-
-      // Kiểm tra đã nhận đủ tất cả chưa
-      const updatedCT = await CT_DonDatHangNCC.find({ donDatHangNCC: ddhId }).session(session);
-      const allReceived = updatedCT.every(ct => ct.soLuongDaNhan >= ct.soLuong);
-
-      if (allReceived) {
-        ddh.trangThai = 'Da nhan hang';
-        await ddh.save({ session });
-      } else if (ddh.trangThai === 'Da duyet' || ddh.trangThai === 'Cho duyet') {
-        ddh.trangThai = 'Dang giao';
-        await ddh.save({ session });
-      }
-      
-      await session.commitTransaction();
-      return await this.getChiTiet(ddh._id);
-    } catch (error) {
-      await session.abortTransaction();
-      throw error;
-    } finally {
-      session.endSession();
+    if (ddh.trangThai === 'Da huy') {
+      throw this.createError('Đơn đặt hàng đã bị hủy', 400);
     }
+
+    const chiTiet = await CT_DonDatHangNCC.find({ donDatHangNCC: ddhId });
+
+    for (const item of danhSachNhan) {
+      const maSP = item.sanPham || item.maSP;
+      const soLuongNhan = parseInt(item.soLuongNhan) || 0;
+
+      const ct = chiTiet.find(c => c.sanPham.toString() === maSP.toString());
+      if (ct) {
+        ct.soLuongDaNhan += soLuongNhan;
+        await ct.save();
+      }
+    }
+
+    // Kiểm tra đã nhận đủ tất cả chưa
+    const updatedCT = await CT_DonDatHangNCC.find({ donDatHangNCC: ddhId });
+    const allReceived = updatedCT.every(ct => ct.soLuongDaNhan >= ct.soLuong);
+
+    if (allReceived) {
+      ddh.trangThai = 'Da nhan hang';
+      await ddh.save();
+    } else if (ddh.trangThai === 'Da duyet' || ddh.trangThai === 'Cho duyet') {
+      ddh.trangThai = 'Dang giao';
+      await ddh.save();
+    }
+
+    return await this.getChiTiet(ddh._id);
   }
 }
 

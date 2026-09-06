@@ -50,28 +50,28 @@ class TonKhoService extends BaseService {
     if (!sanPham) throw this.createError(`Không tìm thấy sản phẩm ${sanPhamId}`, 404);
     if (!kho) throw this.createError(`Không tìm thấy kho ${targetKhoId}`, 404);
 
-    let tonKho = await TonKho.findOne({ sanPham: sanPhamId, kho: targetKhoId }).session(session);
-
-    if (!tonKho) {
-      if (soDelta < 0 && !choPhepAm) {
+    let tonKho;
+    if (soDelta < 0 && !choPhepAm) {
+      tonKho = await TonKho.findOneAndUpdate(
+        { sanPham: sanPhamId, kho: targetKhoId, soLuong: { $gte: Math.abs(soDelta) } },
+        { $inc: { soLuong: soDelta } },
+        { new: true, session }
+      );
+      if (!tonKho) {
+        const currentTonKho = await TonKho.findOne({ sanPham: sanPhamId, kho: targetKhoId }).session(session);
+        const currentQty = currentTonKho ? currentTonKho.soLuong : 0;
         throw this.createError(
-          `Không thể xuất kho: sản phẩm chưa có tồn tại kho "${kho.tenKho}"`,
+          `Không đủ tồn kho: hiện có ${currentQty}, yêu cầu trừ ${Math.abs(soDelta)}`,
           409
         );
       }
-      tonKho = new TonKho({ sanPham: sanPhamId, kho: targetKhoId, soLuong: 0 });
-    }
-
-    const soLuongMoi = tonKho.soLuong + soDelta;
-    if (soLuongMoi < 0 && !choPhepAm) {
-      throw this.createError(
-        `Không đủ tồn kho: hiện có ${tonKho.soLuong}, yêu cầu trừ ${Math.abs(soDelta)}`,
-        409
+    } else {
+      tonKho = await TonKho.findOneAndUpdate(
+        { sanPham: sanPhamId, kho: targetKhoId },
+        { $inc: { soLuong: soDelta } },
+        { new: true, upsert: true, session }
       );
     }
-
-    tonKho.soLuong = soLuongMoi;
-    await tonKho.save({ session });
     return tonKho;
   }
 

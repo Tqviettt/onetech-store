@@ -137,17 +137,34 @@ async function loadSanPhamList() {
 }
 
 async function deleteSanPham(id, tenMay) {
-  if (!confirm(`Bạn có chắc chắn muốn xóa sản phẩm "${tenMay}"? Thao tác không thể hoàn tác!`)) {
-    return;
-  }
+  // Hiện modal xác nhận
+  document.getElementById('modalTenSanPham').textContent = `"${tenMay}"`;
 
-  const res = await api.delete(`/san-pham/${id}`);
-  if (res.success) {
-    showToast(res.message || 'Đã xóa sản phẩm thành công', 'success');
-    loadSanPhamList();
-  } else {
-    showToast(res.message || 'Lỗi khi xóa sản phẩm', 'danger');
-  }
+  const modal = new bootstrap.Modal(document.getElementById('modalXacNhanXoa'));
+  modal.show();
+
+  // Gắn sự kiện cho nút xác nhận (xóa listener cũ để tránh duplicate)
+  const btnXacNhan = document.getElementById('btnXacNhanXoa');
+  const newBtn = btnXacNhan.cloneNode(true);
+  btnXacNhan.parentNode.replaceChild(newBtn, btnXacNhan);
+
+  newBtn.addEventListener('click', async () => {
+    modal.hide();
+
+    const res = await api.delete(`/san-pham/${id}`);
+    if (res.success) {
+      // Xóa row khỏi giao diện, không reload trang
+      const row = document.querySelector(`button[onclick*="${id}"]`)?.closest('tr');
+      if (row) {
+        row.style.transition = 'opacity 0.3s';
+        row.style.opacity = '0';
+        setTimeout(() => row.remove(), 300);
+      }
+      showToast(res.message || 'Đã ẩn sản phẩm khỏi danh sách', 'success');
+    } else {
+      showToast(res.message || 'Lỗi khi xóa sản phẩm', 'danger');
+    }
+  });
 }
 
 /**
@@ -183,7 +200,7 @@ async function initSanPhamForm() {
       document.getElementById('inputTenMay').value = sp.tenMay || '';
       document.getElementById('selectDanhMuc').value = sp.danhMuc?._id || sp.danhMuc || '';
       document.getElementById('inputHang').value = sp.hang || '';
-      (document.getElementById('inputGiaBan').value || '').replace(/[^\\d]/g, '')= sp.giaBan || '';
+      document.getElementById('inputGiaBan').value = sp.giaBan || '';
       document.getElementById('inputSoThangBH').value = sp.soThangBH || 12;
       document.getElementById('inputMoTa').value = sp.moTa || '';
     } else {
@@ -193,15 +210,42 @@ async function initSanPhamForm() {
 
   // 3. Xử lý submit form
   const form = document.getElementById('sanPhamForm');
+  const inputGiaBan = document.getElementById('inputGiaBan');
+
+  // Chỉ cho nhập số vào ô giá bán (chặn chữ và ký tự đặc biệt)
+  if (inputGiaBan) {
+    inputGiaBan.addEventListener('keypress', (e) => {
+      if (!/[0-9]/.test(e.key)) {
+        e.preventDefault();
+      }
+    });
+
+    inputGiaBan.addEventListener('paste', (e) => {
+      const pasted = (e.clipboardData || window.clipboardData).getData('text');
+      if (!/^\d+$/.test(pasted.replace(/[.,\s]/g, ''))) {
+        e.preventDefault();
+      }
+    });
+  }
+
   if (form) {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+
+      const giaBanRaw = Number((document.getElementById('inputGiaBan').value || '').replace(/[^\d]/g, ''));
+
+      // Validate giá bán phải > 0
+      if (!giaBanRaw || giaBanRaw <= 0) {
+        showToast('Hãy nhập mức giá >= 0', 'warning');
+        document.getElementById('inputGiaBan').focus();
+        return;
+      }
 
       const body = {
         tenMay: document.getElementById('inputTenMay').value.trim(),
         danhMuc: document.getElementById('selectDanhMuc').value,
         hang: document.getElementById('inputHang').value.trim(),
-        giaBan: Number((document.getElementById('inputGiaBan').value || '').replace(/[^\\d]/g, '')),
+        giaBan: giaBanRaw,
         soThangBH: Number(document.getElementById('inputSoThangBH').value) || 12,
         moTa: document.getElementById('inputMoTa').value.trim()
       };
@@ -222,6 +266,13 @@ async function initSanPhamForm() {
         showToast(res.message || 'Lỗi khi lưu sản phẩm', 'danger');
       }
     });
+
+    // Xóa trạng thái lỗi khi người dùng bắt đầu nhập lại
+    if (inputGiaBan) {
+      inputGiaBan.addEventListener('input', () => {
+        inputGiaBan.classList.remove('is-invalid');
+      });
+    }
   }
 }
 
