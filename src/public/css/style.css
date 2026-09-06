@@ -87,8 +87,9 @@ body {
   transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1), min-width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 1000;
   height: 100vh;
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
   overflow: hidden;
   border-right: 1px solid rgba(255, 255, 255, 0.06);
 }
@@ -167,21 +168,21 @@ body {
   overflow-x: hidden;
 }
 
-@supports (scrollbar-width: thin) {
+@supports (scrollbar-width: none) {
   .sidebar-nav {
-    scrollbar-width: thin;
+    scrollbar-width: none;
   }
 }
 
 @supports (scrollbar-color: auto) {
   .sidebar-nav {
-    scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+    scrollbar-color: transparent transparent;
   }
 }
 
-.sidebar-nav::-webkit-scrollbar { width: 4px; }
+.sidebar-nav::-webkit-scrollbar { width: 0px; background: transparent; }
 .sidebar-nav::-webkit-scrollbar-track { background: transparent; }
-.sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+.sidebar-nav::-webkit-scrollbar-thumb { background: transparent; }
 
 .nav-category {
   padding: 0.85rem 0.75rem 0.35rem;
@@ -348,6 +349,8 @@ body {
   flex-direction: column;
   min-width: 0;
   background: transparent;
+  margin-left: 260px;
+  transition: margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* =========================================
@@ -639,6 +642,11 @@ body {
   min-width: 68px;
 }
 
+.app-sidebar.collapsed ~ .app-main,
+body:has(.app-sidebar.collapsed) .app-main {
+  margin-left: 68px;
+}
+
 /* Header khi collapsed: Ẩn brand, căn giữa nút toggle */
 .app-sidebar.collapsed .sidebar-header {
   justify-content: center;
@@ -801,6 +809,11 @@ body {
     animation: none;
     width: 260px !important;
     min-width: 260px !important;
+  }
+
+  /* App-main không bị đẩy sang phải trên mobile vì sidebar là overlay */
+  .app-main {
+    margin-left: 0 !important;
   }
 
   /* Khi show trên mobile: luôn mở full */

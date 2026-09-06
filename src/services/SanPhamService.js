@@ -8,7 +8,7 @@ class SanPhamService extends BaseService {
 
   async getAllSanPhams(query = {}) {
     const { search, danhMucId, hang } = query;
-    const filter = {};
+    const filter = { status: { $ne: false } };
 
     if (search && search.trim()) {
       filter.tenMay = { $regex: search.trim(), $options: 'i' };
@@ -110,16 +110,14 @@ class SanPhamService extends BaseService {
   }
 
   async deleteSanPham(id) {
-    const imeiCount = await MayImei.countDocuments({ sanPham: id });
-    if (imeiCount > 0) {
-      throw this.createError(`Không thể xóa model sản phẩm này vì vẫn còn ${imeiCount} máy IMEI liên kết!`, 400);
-    }
-
-    const deleted = await SanPham.findByIdAndDelete(id);
-    if (!deleted) {
+    const updated = await SanPham.findByIdAndUpdate(
+      id,
+      { status: false },
+      { new: true }
+    );
+    if (!updated) {
       throw this.createError('Không tìm thấy sản phẩm', 404);
     }
-
     return { success: true, id };
   }
 }
