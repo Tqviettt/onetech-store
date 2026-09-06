@@ -7,12 +7,19 @@ let currentKhoList = [];
 let currentBienBanResult = null;
 let currentDetailData = null;
 let modalChiTietInstance = null;
+let modalTonLyThuyetInstance = null;
+let cachedImeiLyThuyetList = [];
+let cachedKhoInfo = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
   // Khởi tạo Modal Bootstrap
   const modalEl = document.getElementById('modalChiTietBienBan');
   if (modalEl && typeof bootstrap !== 'undefined') {
     modalChiTietInstance = new bootstrap.Modal(modalEl);
+  }
+  const modalTonLyThuyetEl = document.getElementById('modalDanhSachTonLyThuyet');
+  if (modalTonLyThuyetEl && typeof bootstrap !== 'undefined') {
+    modalTonLyThuyetInstance = new bootstrap.Modal(modalTonLyThuyetEl);
   }
 
   // Tải danh mục kho và nạp dữ liệu ban đầu
@@ -26,7 +33,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function loadKhoList() {
   try {
     const res = await api.get('/kho/ton-kho');
-    // Trích xuất danh sách kho duy nhất
     const khoMap = new Map();
     if (res && res.data) {
       const items = Array.isArray(res.data) ? res.data : (res.data.items || []);
@@ -45,27 +51,20 @@ async function loadKhoList() {
     currentKhoList = [...khoMap.values()];
 
     const selectKho = document.getElementById('selectKho');
-    const filterKho = document.getElementById('filterKho');
+    const displayTenKho = document.getElementById('displayTenKho');
 
-    if (selectKho) {
-      if (currentKhoList.length === 0) {
-        selectKho.innerHTML = '<option value="default">Kho Tổng OneTech</option>';
-      } else {
-        selectKho.innerHTML = currentKhoList.map(k => 
-          `<option value="${k._id}">${k.tenKho || 'Kho hàng'} - ${k.diaChi || ''}</option>`
-        ).join('');
-      }
-    }
-
-    if (filterKho) {
-      filterKho.innerHTML = '<option value="">Tất cả kho</option>' + 
-        currentKhoList.map(k => `<option value="${k._id}">${k.tenKho || 'Kho hàng'}</option>`).join('');
+    if (currentKhoList.length > 0) {
+      const k = currentKhoList[0];
+      if (selectKho) selectKho.value = k._id;
+      if (displayTenKho) displayTenKho.value = k.tenKho || 'Kho Tổng OneTech Store';
+    } else {
+      if (displayTenKho) displayTenKho.value = 'Kho Tổng OneTech Store';
     }
 
     // Tải thông tin tồn lý thuyết của kho đang chọn
     await handleKhoChange();
   } catch (err) {
-    console.error('Lỗi khi tải danh sách kho:', err);
+    console.error('Lỗi khi tải thông tin kho:', err);
   }
 }
 
@@ -80,14 +79,241 @@ async function handleKhoChange() {
 
     if (res && res.success && res.data) {
       const tongLT = res.data.tongSoLuong || 0;
+      cachedImeiLyThuyetList = res.data.danhSachImei || [];
+      cachedKhoInfo = res.data.kho || {};
       const statTongLyThuyet = document.getElementById('statTongLyThuyet');
       if (statTongLyThuyet) {
         statTongLyThuyet.textContent = `${tongLT} máy`;
+      }
+      const displayTenKho = document.getElementById('displayTenKho');
+      if (displayTenKho && res.data.kho && res.data.kho.tenKho) {
+        displayTenKho.value = res.data.kho.tenKho;
       }
     }
   } catch (err) {
     console.warn('Không thể tải tồn lý thuyết:', err.message);
   }
+}
+
+/**
+ * Mở Modal xem danh sách máy tồn kho lý thuyết (DB)
+ */
+async function openModalTonLyThuyet() {
+  const displayTenKho = document.getElementById('displayTenKho');
+  const tenKhoText = displayTenKho ? displayTenKho.value : 'Kho Tổng OneTech Store';
+
+  const modalKhoEl = document.getElementById('modalTonLyThuyetTenKho');
+  if (modalKhoEl) modalKhoEl.textContent = tenKhoText;
+
+  const modalTitle = document.getElementById('modalTonLyThuyetLabel');
+  if (modalTitle) {
+    modalTitle.innerHTML = '<i class="bi bi-database-check me-2"></i> Danh Sách Máy Tồn Kho Lý Thuyết (DB)';
+  }
+
+  // Nếu chưa nạp dữ liệu, nạp ngay
+  if (!cachedImeiLyThuyetList || cachedImeiLyThuyetList.length === 0) {
+    await handleKhoChange();
+  }
+
+  const searchInput = document.getElementById('searchTonLyThuyet');
+  if (searchInput) searchInput.value = '';
+
+  renderTonLyThuyetTable(cachedImeiLyThuyetList);
+
+  if (modalTonLyThuyetInstance) {
+    modalTonLyThuyetInstance.show();
+  }
+}
+
+/**
+ * Mở Modal xem danh sách máy thực tế đã quét
+ */
+function openModalThucTeQuet() {
+  const modalKhoEl = document.getElementById('modalTonLyThuyetTenKho');
+  if (modalKhoEl) modalKhoEl.textContent = 'Thực tế đã quét';
+
+  const modalTitle = document.getElementById('modalTonLyThuyetLabel');
+  if (modalTitle) {
+    modalTitle.innerHTML = '<i class="bi bi-upc-scan me-2"></i> Danh Sách Mã IMEI Thực Tế Đã Quét';
+  }
+
+  let listToRender = [];
+
+  if (currentBienBanResult && currentBienBanResult.tongKet) {
+    const { danhSachKhop = [], danhSachThua = [], danhSachBatThuong = [] } = currentBienBanResult;
+    listToRender = [...danhSachKhop, ...danhSachThua, ...danhSachBatThuong];
+  } else {
+    const textarea = document.getElementById('textareaImeiThucTe');
+    const raw = textarea ? textarea.value.trim() : '';
+    if (raw) {
+      const imeis = [...new Set(raw.split(/[\n,;\t\r]+/).map(s => s.trim()).filter(s => s.length > 0))];
+      listToRender = imeis.map(imei => {
+        const foundDb = cachedImeiLyThuyetList.find(m => m.imei === imei);
+        return {
+          imei,
+          tenMay: foundDb?.tenMay || 'Mã IMEI quét thực tế',
+          hang: foundDb?.hang || 'N/A',
+          mauSac: foundDb?.mauSac || '',
+          dungLuong: foundDb?.dungLuong || '',
+          trangThai: foundDb ? 'Có trong DB' : 'Chưa có thông tin DB',
+          ngayNhap: foundDb?.ngayNhap
+        };
+      });
+    }
+  }
+
+  if (listToRender.length === 0) {
+    api.showToast('Chưa có mã IMEI thực tế nào được quét hoặc nhập vào', 'warning');
+    return;
+  }
+
+  const searchInput = document.getElementById('searchTonLyThuyet');
+  if (searchInput) searchInput.value = '';
+
+  renderTonLyThuyetTable(listToRender);
+
+  if (modalTonLyThuyetInstance) {
+    modalTonLyThuyetInstance.show();
+  }
+}
+
+/**
+ * Mở Modal xem danh sách máy khớp 100%
+ */
+function openModalKhop() {
+  if (!currentBienBanResult || !currentBienBanResult.danhSachKhop) {
+    api.showToast('Vui lòng thực hiện phiên kiểm kê để đối soát danh sách khớp 100%', 'info');
+    return;
+  }
+
+  const modalKhoEl = document.getElementById('modalTonLyThuyetTenKho');
+  if (modalKhoEl) modalKhoEl.textContent = 'Danh sách khớp 100%';
+
+  const modalTitle = document.getElementById('modalTonLyThuyetLabel');
+  if (modalTitle) {
+    modalTitle.innerHTML = '<i class="bi bi-check2-circle me-2"></i> Danh Sách Máy Khớp 100% Lý Thuyết & Thực Tế';
+  }
+
+  const listToRender = currentBienBanResult.danhSachKhop.map(item => ({
+    imei: item.imei,
+    tenMay: item.tenMay,
+    hang: item.hang,
+    trangThai: 'Khớp 100%',
+    ngayNhap: null
+  }));
+
+  const searchInput = document.getElementById('searchTonLyThuyet');
+  if (searchInput) searchInput.value = '';
+
+  renderTonLyThuyetTable(listToRender);
+
+  if (modalTonLyThuyetInstance) {
+    modalTonLyThuyetInstance.show();
+  }
+}
+
+/**
+ * Mở Modal xem danh sách máy bị chênh lệch (thiếu / thừa / bất thường)
+ */
+function openModalLech() {
+  if (!currentBienBanResult) {
+    api.showToast('Vui lòng thực hiện phiên kiểm kê để đối soát danh sách chênh lệch', 'info');
+    return;
+  }
+
+  const { danhSachThieu = [], danhSachThua = [], danhSachBatThuong = [] } = currentBienBanResult;
+  const allLech = [...danhSachThieu, ...danhSachThua, ...danhSachBatThuong];
+
+  if (allLech.length === 0) {
+    api.showToast('Tuyệt vời! Không có máy nào bị chênh lệch kho', 'success');
+    return;
+  }
+
+  const modalKhoEl = document.getElementById('modalTonLyThuyetTenKho');
+  if (modalKhoEl) modalKhoEl.textContent = 'Danh sách chênh lệch kho';
+
+  const modalTitle = document.getElementById('modalTonLyThuyetLabel');
+  if (modalTitle) {
+    modalTitle.innerHTML = '<i class="bi bi-exclamation-triangle me-2"></i> Danh Sách Máy Chênh Lệch Cần Xử Lý';
+  }
+
+  const listToRender = allLech.map(item => ({
+    imei: item.imei,
+    tenMay: item.tenMay,
+    hang: item.hang,
+    trangThai: item.loaiLech === 'Thieu' ? 'Thiếu (-1)' : (item.loaiLech === 'Thua' ? 'Thừa (+1)' : 'Bất thường (0)'),
+    lyDo: item.lyDo || item.ghiChu
+  }));
+
+  const searchInput = document.getElementById('searchTonLyThuyet');
+  if (searchInput) searchInput.value = '';
+
+  renderTonLyThuyetTable(listToRender);
+
+  if (modalTonLyThuyetInstance) {
+    modalTonLyThuyetInstance.show();
+  }
+}
+
+/**
+ * Render bảng danh sách tồn lý thuyết trong Modal
+ */
+function renderTonLyThuyetTable(list = []) {
+  const tbody = document.getElementById('tbodyDanhSachTonLyThuyet');
+  const badgeCount = document.getElementById('modalTonLyThuyetCount');
+  const summaryEl = document.getElementById('modalTonLyThuyetSummary');
+
+  if (badgeCount) badgeCount.textContent = `${list.length} máy`;
+  if (summaryEl) summaryEl.textContent = `Hiển thị ${list.length} / ${cachedImeiLyThuyetList.length} máy tồn`;
+
+  if (!tbody) return;
+
+  if (list.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">Không tìm thấy máy tồn kho nào phù hợp</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = list.map((item, idx) => {
+    const d = item.ngayNhap ? new Date(item.ngayNhap) : null;
+    const ngayStr = d ? `${d.toLocaleDateString('vi-VN')}` : 'N/A';
+    const mauDungLuong = [item.mauSac, item.dungLuong].filter(Boolean).join(' - ') || 'N/A';
+
+    return `
+      <tr>
+        <td class="text-center">${idx + 1}</td>
+        <td class="font-monospace fw-bold text-primary">${item.imei || '---'}</td>
+        <td class="fw-semibold">${item.tenMay || 'Không rõ model'}</td>
+        <td class="text-center">${item.hang || 'N/A'}</td>
+        <td class="text-center small text-muted">${mauDungLuong}</td>
+        <td class="text-center"><span class="badge bg-success">Còn hàng</span></td>
+        <td class="text-center small text-muted">${ngayStr}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+/**
+ * Tìm kiếm lọc thời gian thực trong Modal Tồn Lý Thuyết
+ */
+function filterTonLyThuyetTable() {
+  const input = document.getElementById('searchTonLyThuyet');
+  const query = input ? input.value.trim().toLowerCase() : '';
+
+  if (!query) {
+    renderTonLyThuyetTable(cachedImeiLyThuyetList);
+    return;
+  }
+
+  const filtered = cachedImeiLyThuyetList.filter(item => {
+    const imei = (item.imei || '').toLowerCase();
+    const tenMay = (item.tenMay || '').toLowerCase();
+    const hang = (item.hang || '').toLowerCase();
+    const mauSac = (item.mauSac || '').toLowerCase();
+    const dungLuong = (item.dungLuong || '').toLowerCase();
+    return imei.includes(query) || tenMay.includes(query) || hang.includes(query) || mauSac.includes(query) || dungLuong.includes(query);
+  });
+
+  renderTonLyThuyetTable(filtered);
 }
 
 /**

@@ -158,7 +158,7 @@ function addMayRow() {
       </div>
       <div class="col-6 col-md-2">
         <label class="form-label small fw-semibold">Giá nhập (VNĐ)</label>
-        <input type="number" class="form-control form-control-sm input-may-gia" placeholder="0" min="0" oninput="recalcTotalPreview()" required>
+        <input type="text" class="form-control form-control-sm format-currency input-may-gia" placeholder="0" oninput="maskCurrencyInput(this); recalcTotalPreview()" required>
       </div>
       <div class="col-6 col-md-2">
         <label class="form-label small fw-semibold">Số IMEI (15 số)</label>
@@ -191,7 +191,7 @@ function addPhuKienRow() {
       </div>
       <div class="col-6 col-md-3">
         <label class="form-label small fw-semibold">Giá nhập (VNĐ)</label>
-        <input type="number" class="form-control form-control-sm input-pk-gia" placeholder="0" min="0" oninput="recalcTotalPreview()" required>
+        <input type="text" class="form-control form-control-sm format-currency input-pk-gia" placeholder="0" oninput="maskCurrencyInput(this); recalcTotalPreview()" required>
       </div>
       <div class="col-6 col-md-3">
         <label class="form-label small fw-semibold">Số lượng nhập</label>
@@ -218,10 +218,10 @@ function removeRow(rowId) {
 function recalcTotalPreview() {
   let total = 0;
   document.querySelectorAll('#mayRowsContainer .input-may-gia').forEach(inp => {
-    total += Number(inp.value) || 0;
+    total += parseCurrencyValue(inp.value);
   });
   document.querySelectorAll('#phuKienRowsContainer > div').forEach(row => {
-    const gia = Number(row.querySelector('.input-pk-gia')?.value) || 0;
+    const gia = parseCurrencyValue(row.querySelector('.input-pk-gia')?.value);
     const sl = Number(row.querySelector('.input-pk-sl')?.value) || 0;
     total += (gia * sl);
   });
@@ -239,7 +239,7 @@ async function handleCreatePhieuNhap(e) {
     const maSP = row.querySelector('.select-may-sp')?.value;
     const mauSac = row.querySelector('.input-may-mau')?.value.trim();
     const dungLuong = row.querySelector('.input-may-dl')?.value.trim();
-    const giaNhap = Number(row.querySelector('.input-may-gia')?.value);
+    const giaNhap = parseCurrencyValue(row.querySelector('.input-may-gia')?.value);
     const imei = row.querySelector('.input-may-imei')?.value.trim();
 
     if (maSP && imei && giaNhap > 0) {
@@ -250,7 +250,7 @@ async function handleCreatePhieuNhap(e) {
   const danhSachPhuKien = [];
   document.querySelectorAll('#phuKienRowsContainer > div').forEach(row => {
     const maPK = row.querySelector('.select-pk')?.value;
-    const giaNhap = Number(row.querySelector('.input-pk-gia')?.value);
+    const giaNhap = parseCurrencyValue(row.querySelector('.input-pk-gia')?.value);
     const soLuong = Number(row.querySelector('.input-pk-sl')?.value);
 
     if (maPK && giaNhap > 0 && soLuong > 0) {

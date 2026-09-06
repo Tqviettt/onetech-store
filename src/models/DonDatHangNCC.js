@@ -6,6 +6,9 @@ const donDatHangNCCSchema = new mongoose.Schema({
   nhanVien: { type: mongoose.Schema.Types.ObjectId, ref: 'NhanVien', required: true },
   ngayDat: { type: Date, default: Date.now },
   ngayDuKienGiao: { type: Date },
+  diaChiGiao: { type: String, default: '' },
+  sdtNguoiGiao: { type: String, default: '' },
+  cccdNguoiGiao: { type: String, default: '' },
   tongTien: { type: Number, default: 0, min: 0 },
   trangThai: {
     type: String,

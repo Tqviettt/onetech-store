@@ -42,12 +42,12 @@
       <!-- Cards Thống kê KPI -->
       <div class="row g-3 mb-4">
         <div class="col-12 col-sm-6 col-xl-3">
-          <div class="card-custom p-3 border-start border-primary border-4">
+          <div class="card-custom p-3 border-start border-primary border-4 card-interactive" onclick="openModalTonLyThuyet()" style="cursor: pointer;" title="Nhấp vào để xem danh sách toàn bộ máy tồn lý thuyết (DB)">
             <div class="d-flex align-items-center justify-content-between">
               <div>
-                <p class="text-muted small mb-1 fw-semibold">TỒN LÝ THUYẾT (DB)</p>
+                <p class="text-muted small mb-1 fw-semibold">TỒN LÝ THUYẾT (DB) <i class="bi bi-box-arrow-up-right text-primary ms-1"></i></p>
                 <h4 class="fw-bold text-primary mb-0" id="statTongLyThuyet">0 máy</h4>
-                <div class="small text-muted mt-1">Đang ở trạng thái "Còn hàng"</div>
+                <div class="small text-primary mt-1"><i class="bi bi-eye me-1"></i>Xem danh sách máy tồn</div>
               </div>
               <div class="bg-primary-subtle text-primary p-3 rounded-circle fs-3">
                 <i class="bi bi-database-check"></i>
@@ -57,12 +57,12 @@
         </div>
 
         <div class="col-12 col-sm-6 col-xl-3">
-          <div class="card-custom p-3 border-start border-success border-4">
+          <div class="card-custom p-3 border-start border-success border-4 card-interactive" onclick="openModalThucTeQuet()" style="cursor: pointer;" title="Nhấp vào để xem danh sách IMEI thực tế đã quét">
             <div class="d-flex align-items-center justify-content-between">
               <div>
-                <p class="text-muted small mb-1 fw-semibold">THỰC TẾ ĐÃ QUÉT</p>
+                <p class="text-muted small mb-1 fw-semibold">THỰC TẾ ĐÃ QUÉT <i class="bi bi-box-arrow-up-right text-success ms-1"></i></p>
                 <h4 class="fw-bold text-success mb-0" id="statTongThucTe">0 máy</h4>
-                <div class="small text-muted mt-1">Mã IMEI quét thực tế</div>
+                <div class="small text-success mt-1"><i class="bi bi-eye me-1"></i>Xem IMEI thực tế</div>
               </div>
               <div class="bg-success-subtle text-success p-3 rounded-circle fs-3">
                 <i class="bi bi-upc-scan"></i>
@@ -72,12 +72,12 @@
         </div>
 
         <div class="col-12 col-sm-6 col-xl-3">
-          <div class="card-custom p-3 border-start border-info border-4">
+          <div class="card-custom p-3 border-start border-info border-4 card-interactive" onclick="openModalKhop()" style="cursor: pointer;" title="Nhấp vào để xem danh sách máy khớp 100%">
             <div class="d-flex align-items-center justify-content-between">
               <div>
-                <p class="text-muted small mb-1 fw-semibold">SỐ LƯỢNG KHỚP 100%</p>
+                <p class="text-muted small mb-1 fw-semibold">SỐ LƯỢNG KHỚP 100% <i class="bi bi-box-arrow-up-right text-info ms-1"></i></p>
                 <h4 class="fw-bold text-info mb-0" id="statTongKhop">0 máy</h4>
-                <div class="small text-muted mt-1">Khớp đúng lý thuyết & thực tế</div>
+                <div class="small text-info mt-1"><i class="bi bi-eye me-1"></i>Xem danh sách khớp</div>
               </div>
               <div class="bg-info-subtle text-info p-3 rounded-circle fs-3">
                 <i class="bi bi-check2-circle"></i>
@@ -87,12 +87,12 @@
         </div>
 
         <div class="col-12 col-sm-6 col-xl-3">
-          <div class="card-custom p-3 border-start border-danger border-4">
+          <div class="card-custom p-3 border-start border-danger border-4 card-interactive" onclick="openModalLech()" style="cursor: pointer;" title="Nhấp vào để xem danh sách máy bị chênh lệch">
             <div class="d-flex align-items-center justify-content-between">
               <div>
-                <p class="text-muted small mb-1 fw-semibold">CHÊNH LỆCH CẦN XỬ LÝ</p>
+                <p class="text-muted small mb-1 fw-semibold">CHÊNH LỆCH CẦN XỬ LÝ <i class="bi bi-box-arrow-up-right text-danger ms-1"></i></p>
                 <h4 class="fw-bold text-danger mb-0" id="statTongLech">0 máy</h4>
-                <div class="small text-muted mt-1"><span id="statThieu" class="text-danger">0 thiếu</span> / <span id="statThua" class="text-warning">0 thừa</span></div>
+                <div class="small text-danger mt-1"><span id="statThieu" class="text-danger">0 thiếu</span> / <span id="statThua" class="text-warning">0 thừa</span> (Click xem)</div>
               </div>
               <div class="bg-danger-subtle text-danger p-3 rounded-circle fs-3">
                 <i class="bi bi-exclamation-triangle"></i>
@@ -111,11 +111,13 @@
         <form id="formKiemKe" onsubmit="handleThucHienKiemKe(event)">
           <div class="row g-3">
             <div class="col-md-4">
-              <label class="form-label fw-semibold" for="selectKho">Kho hàng cần kiểm kê <span class="text-danger">*</span></label>
-              <select class="form-select" id="selectKho" required onchange="handleKhoChange()">
-                <option value="">-- Đang tải danh sách kho... --</option>
-              </select>
-              <div class="form-text">Chọn kho để hệ thống nạp dữ liệu tồn lý thuyết</div>
+              <label class="form-label fw-semibold">Kho hàng kiểm kê <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <span class="input-group-text bg-light text-primary"><i class="bi bi-house-door-fill"></i></span>
+                <input type="text" class="form-control bg-light fw-bold text-primary" id="displayTenKho" value="Đang tải thông tin kho..." readonly>
+              </div>
+              <input type="hidden" id="selectKho" value="">
+              <div class="form-text">Kho duy nhất của hệ thống cửa hàng</div>
             </div>
 
             <div class="col-md-8">
@@ -193,12 +195,9 @@
             <i class="bi bi-clock-history me-2 text-primary"></i> Lịch Sử Các Biên Bản Kiểm Kê Kho
           </h5>
           
-          <!-- Bộ lọc -->
+          <!-- Bộ lọc (Đã bỏ lọc tất cả kho vì cửa hàng dùng 1 kho duy nhất) -->
           <div class="d-flex gap-2 flex-wrap">
-            <select class="form-select form-select-sm" id="filterKho" style="width: 160px;" onchange="loadLichSuKiemKe(1)">
-              <option value="">Tất cả kho</option>
-            </select>
-            <select class="form-select form-select-sm" id="filterTrangThai" style="width: 160px;" onchange="loadLichSuKiemKe(1)">
+            <select class="form-select form-select-sm" id="filterTrangThai" style="width: 170px;" onchange="loadLichSuKiemKe(1)">
               <option value="">Tất cả trạng thái</option>
               <option value="Da kiem ke">Đã kiểm kê</option>
               <option value="Da dieu chinh">Đã điều chỉnh</option>
@@ -315,6 +314,60 @@
         <button type="button" class="btn btn-success" id="btnModalApDung">
           <i class="bi bi-check-lg me-1"></i> Áp Dụng Điều Chỉnh Kho
         </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DANH SÁCH MÁY TỒN KHO LÝ THUYẾT (DB) -->
+<div class="modal fade" id="modalDanhSachTonLyThuyet" tabindex="-1" aria-labelledby="modalTonLyThuyetLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content shadow-lg border-0">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title fw-bold" id="modalTonLyThuyetLabel">
+          <i class="bi bi-database-check me-2"></i> Danh Sách Máy Tồn Kho Lý Thuyết (DB)
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+          <div>
+            <span class="fw-semibold text-muted">Kho hàng: </span>
+            <span class="fw-bold text-primary" id="modalTonLyThuyetTenKho">Kho Tổng</span>
+            <span class="badge bg-primary ms-2" id="modalTonLyThuyetCount">0 máy</span>
+          </div>
+          <div class="d-flex gap-2">
+            <div class="input-group input-group-sm" style="width: 300px;">
+              <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+              <input type="text" class="form-control" id="searchTonLyThuyet" placeholder="Tìm theo IMEI, Tên máy, Hãng..." oninput="filterTonLyThuyetTable()">
+            </div>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover table-bordered align-middle">
+            <thead class="table-light text-center small text-uppercase">
+              <tr>
+                <th style="width: 50px;">STT</th>
+                <th style="width: 170px;">Mã IMEI</th>
+                <th>Tên Sản Phẩm / Model</th>
+                <th style="width: 110px;">Hãng</th>
+                <th style="width: 150px;">Màu / Dung lượng</th>
+                <th style="width: 130px;">Trạng Thái DB</th>
+                <th style="width: 140px;">Ngày Nhập</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyDanhSachTonLyThuyet">
+              <tr>
+                <td colspan="7" class="text-center text-muted py-4">Đang tải danh sách máy tồn...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer bg-light d-flex justify-content-between">
+        <div class="small text-muted" id="modalTonLyThuyetSummary">Hiển thị 0 / 0 máy tồn</div>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
       </div>
     </div>
   </div>
