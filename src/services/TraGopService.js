@@ -136,19 +136,24 @@ class TraGopService extends BaseService {
       }
 
       const daThu = i <= hopDong.soKyDaThu;
-      let trangThai = 'Chưa thu';
+      let trangThai = 'Chua thu';
+      let trangThaiText = 'Chưa thu';
       if (daThu) {
-        trangThai = 'Đã thu';
+        trangThai = 'Da thu';
+        trangThaiText = 'Đã thu';
       } else if (ngayDenHan < new Date()) {
-        trangThai = 'Quá hạn';
+        trangThai = 'Qua han';
+        trangThaiText = 'Quá hạn';
       }
 
       lichThu.push({
         ky: i,
+        kyThu: i,
         ngayDenHan,
         soTien: soTienKy,
         daThu,
-        trangThai
+        trangThai,
+        trangThaiText
       });
     }
 

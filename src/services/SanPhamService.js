@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const BaseService = require('./BaseService');
 const { SanPham, DanhMuc, MayImei } = require('../models');
 
@@ -21,9 +22,9 @@ class SanPhamService extends BaseService {
     }
 
     const [sanPhams, danhMucs, allHangs, counts, totalCounts] = await Promise.all([
-      SanPham.find(filter).populate('danhMuc').sort({ createdAt: -1 }),
-      DanhMuc.find().sort({ tenDanhMuc: 1 }),
-      SanPham.distinct('hang'),
+      SanPham.find(filter).populate('danhMuc').sort({ createdAt: -1 }).lean(),
+      DanhMuc.find().sort({ tenDanhMuc: 1 }).lean(),
+      SanPham.distinct('hang', filter),
       MayImei.aggregate([
         { $match: { trangThai: 'Con hang' } },
         { $group: { _id: '$sanPham', soLuongTon: { $sum: 1 } } }
@@ -55,10 +56,14 @@ class SanPhamService extends BaseService {
   }
 
   async getSanPhamDetail(id) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      throw this.createError('ID sản phẩm không hợp lệ', 400);
+    }
+
     const [sanPham, danhMucs, imeis] = await Promise.all([
-      SanPham.findById(id).populate('danhMuc'),
-      DanhMuc.find().sort({ tenDanhMuc: 1 }),
-      MayImei.find({ sanPham: id }).sort({ createdAt: -1 })
+      SanPham.findById(id).populate('danhMuc').lean(),
+      DanhMuc.find().sort({ tenDanhMuc: 1 }).lean(),
+      MayImei.find({ sanPham: id }).sort({ createdAt: -1 }).lean()
     ]);
 
     if (!sanPham) {
@@ -86,6 +91,10 @@ class SanPhamService extends BaseService {
   }
 
   async updateSanPham(id, payload = {}) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      throw this.createError('ID sản phẩm không hợp lệ', 400);
+    }
+
     const { tenMay, danhMuc, hang, giaBan, soThangBH, hinhAnh, moTa } = payload;
 
     const updated = await SanPham.findByIdAndUpdate(
@@ -110,6 +119,10 @@ class SanPhamService extends BaseService {
   }
 
   async deleteSanPham(id) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      throw this.createError('ID sản phẩm không hợp lệ', 400);
+    }
+
     const updated = await SanPham.findByIdAndUpdate(
       id,
       { status: false },

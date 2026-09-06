@@ -241,21 +241,31 @@ async function xemChiTiet(id) {
   `;
   
   lichThu.forEach(ky => {
-    let badge = 'bg-warning text-dark';
-    if (ky.trangThai === 'Đã thu') badge = 'bg-success';
-    if (ky.trangThai === 'Quá hạn') badge = 'bg-danger';
+    const kyNum = ky.kyThu || ky.ky;
+    const isDaThu = ky.daThu || ky.trangThai === 'Đã thu' || ky.trangThai === 'Da thu';
+    const isQuaHan = ky.trangThai === 'Quá hạn' || ky.trangThai === 'Qua han';
     
-    const isKyTiepTheo = ky.trangThai !== 'Đã thu' && ky.ky === (hd.soKyDaThu + 1);
+    let badge = 'bg-warning text-dark';
+    let textHienThi = ky.trangThaiText || 'Chưa thu';
+    if (isDaThu) {
+      badge = 'bg-success';
+      textHienThi = 'Đã thu';
+    } else if (isQuaHan) {
+      badge = 'bg-danger';
+      textHienThi = 'Quá hạn';
+    }
+    
+    const isKyTiepTheo = !isDaThu && kyNum === (hd.soKyDaThu + 1);
     
     html += `
       <tr class="${isKyTiepTheo ? 'table-primary bg-opacity-10' : ''}">
-        <td class="fw-bold">Kỳ ${ky.ky}</td>
+        <td class="fw-bold">Kỳ ${kyNum}</td>
         <td>${new Date(ky.ngayDenHan).toLocaleDateString('vi-VN')}</td>
-        <td class="text-danger fw-bold">${ky.soTien.toLocaleString('vi-VN')} đ</td>
-        <td><span class="badge ${badge}">${ky.trangThai}</span></td>
+        <td class="text-danger fw-bold">${(ky.soTien || 0).toLocaleString('vi-VN')} đ</td>
+        <td><span class="badge ${badge}">${escapeHtml(textHienThi)}</span></td>
         <td>
-          ${isKyTiepTheo ? `<button class="btn btn-sm btn-success py-0" onclick="openThuTienModal(${ky.ky}, ${ky.soTien})"><i class="bi bi-check2-circle"></i> Thu Ngay</button>` : ''}
-          ${ky.trangThai === 'Đã thu' ? `<i class="bi bi-check text-success fs-5"></i>` : ''}
+          ${isKyTiepTheo ? `<button class="btn btn-sm btn-success py-0" onclick="openThuTienModal(${kyNum}, ${ky.soTien})"><i class="bi bi-check2-circle"></i> Thu Ngay</button>` : ''}
+          ${isDaThu ? `<i class="bi bi-check text-success fs-5"></i>` : ''}
         </td>
       </tr>
     `;

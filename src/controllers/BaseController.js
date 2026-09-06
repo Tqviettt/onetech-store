@@ -44,8 +44,9 @@ class BaseController {
   handleError(res, error, defaultMessage = 'Đã xảy ra lỗi trong quá trình xử lý') {
     console.error(`[Controller Error]:`, error);
 
-    const statusCode = error.statusCode || (error.name === 'ValidationError' ? 400 : 500);
-    const message = error.message || defaultMessage;
+    const is400Error = error.name === 'ValidationError' || error.name === 'CastError';
+    const statusCode = error.statusCode || (is400Error ? 400 : 500);
+    const message = is400Error && error.name === 'CastError' ? 'Dữ liệu ID không hợp lệ' : (error.message || defaultMessage);
 
     const extra = {};
     if (error.invalidImeis) extra.invalidImeis = error.invalidImeis;

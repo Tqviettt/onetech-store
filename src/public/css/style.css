@@ -643,6 +643,7 @@ body {
 }
 
 .app-sidebar.collapsed ~ .app-main,
+body.sidebar-collapsed .app-main,
 body:has(.app-sidebar.collapsed) .app-main {
   margin-left: 68px;
 }

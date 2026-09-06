@@ -476,6 +476,7 @@ function renderSidebarAndNavbar(user) {
   // Khôi phục trạng thái từ localStorage
   if (sidebar && localStorage.getItem('sidebarCollapsed') === 'true') {
     sidebar.classList.add('collapsed');
+    document.body.classList.add('sidebar-collapsed');
     updateCollapseIcon(true);
   }
 
@@ -484,6 +485,7 @@ function renderSidebarAndNavbar(user) {
       e.preventDefault();
       e.stopPropagation();
       const isCollapsed = sidebar.classList.toggle('collapsed');
+      document.body.classList.toggle('sidebar-collapsed', isCollapsed);
       updateCollapseIcon(isCollapsed);
       localStorage.setItem('sidebarCollapsed', isCollapsed);
     });
