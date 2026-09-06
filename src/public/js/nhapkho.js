@@ -134,10 +134,12 @@ async function openCreateNhapKhoModal() {
 }
 
 let rowMayCounter = 0;
-function addMayRow() {
+function addMayRow(defaultSP = '', defaultMau = '', defaultDL = '', defaultGia = '', defaultImei = '') {
   rowMayCounter++;
   const container = document.getElementById('mayRowsContainer');
-  const spOptions = dsSanPham.map(sp => `<option value="${sp._id}">${escapeHtml(sp.tenMay)} (${escapeHtml(sp.hang || 'Apple')})</option>`).join('');
+  const spOptions = dsSanPham.map(sp => 
+    `<option value="${sp._id}" ${sp._id === defaultSP ? 'selected' : ''}>${escapeHtml(sp.tenMay)}</option>`
+  ).join('');
 
   const rowHtml = `
     <div class="row g-2 align-items-end p-2 bg-light rounded border" id="mayRow_${rowMayCounter}">
@@ -150,19 +152,19 @@ function addMayRow() {
       </div>
       <div class="col-6 col-md-2">
         <label class="form-label small fw-semibold">Màu sắc</label>
-        <input type="text" class="form-control form-control-sm input-may-mau" placeholder="VD: Titan Tự Nhiên">
+        <input type="text" class="form-control form-control-sm input-may-mau" placeholder="VD: Titan Tự Nhiên" value="${escapeHtml(defaultMau)}">
       </div>
       <div class="col-6 col-md-2">
         <label class="form-label small fw-semibold">Dung lượng</label>
-        <input type="text" class="form-control form-control-sm input-may-dl" placeholder="VD: 256GB">
+        <input type="text" class="form-control form-control-sm input-may-dl" placeholder="VD: 256GB" value="${escapeHtml(defaultDL)}">
       </div>
       <div class="col-6 col-md-2">
         <label class="form-label small fw-semibold">Giá nhập (VNĐ)</label>
-        <input type="number" class="form-control form-control-sm input-may-gia" placeholder="0" min="0" oninput="recalcTotalPreview()" required>
+        <input type="number" class="form-control form-control-sm input-may-gia" placeholder="0" min="0" oninput="recalcTotalPreview()" value="${defaultGia}" required>
       </div>
       <div class="col-6 col-md-2">
         <label class="form-label small fw-semibold">Số IMEI (15 số)</label>
-        <input type="text" class="form-control form-control-sm font-monospace input-may-imei" placeholder="IMEI 15 ký tự" required>
+        <input type="text" class="form-control form-control-sm font-monospace input-may-imei" placeholder="IMEI 15 ký tự" value="${escapeHtml(defaultImei)}" required>
       </div>
       <div class="col-12 col-md-1 text-end">
         <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow('mayRow_${rowMayCounter}')">
@@ -172,6 +174,45 @@ function addMayRow() {
     </div>
   `;
   container.insertAdjacentHTML('beforeend', rowHtml);
+  recalcTotalPreview();
+}
+
+// LOGIC NHẬP HÀNG LOẠT IMEI
+function openBulkImportModal() {
+  const bulkInputSP = document.getElementById('bulkInputSP');
+  bulkInputSP.innerHTML = '<option value="">-- Chọn máy --</option>' + dsSanPham.map(sp => `<option value="${sp._id}">${escapeHtml(sp.tenMay)}</option>`).join('');
+  document.getElementById('bulkInputMau').value = '';
+  document.getElementById('bulkInputDL').value = '';
+  document.getElementById('bulkInputGia').value = '';
+  document.getElementById('bulkInputImeis').value = '';
+  
+  const modal = new bootstrap.Modal(document.getElementById('modalBulkImport'));
+  modal.show();
+}
+
+function processBulkImport() {
+  const maSP = document.getElementById('bulkInputSP').value;
+  const mauSac = document.getElementById('bulkInputMau').value;
+  const dungLuong = document.getElementById('bulkInputDL').value;
+  const giaNhap = document.getElementById('bulkInputGia').value;
+  const rawText = document.getElementById('bulkInputImeis').value;
+  
+  if (!maSP) return api.toast('Vui lòng chọn Model máy chung', 'warning');
+  if (!giaNhap || Number(giaNhap) <= 0) return api.toast('Vui lòng nhập giá nhập', 'warning');
+  if (!rawText.trim()) return api.toast('Vui lòng nhập ít nhất 1 IMEI', 'warning');
+  
+  // Tách IMEI bằng dấu phẩy hoặc xuống dòng
+  const imeis = rawText.split(/[\n,]+/).map(i => i.trim()).filter(i => i.length > 0);
+  if (imeis.length === 0) return api.toast('Không tìm thấy IMEI hợp lệ', 'warning');
+  
+  bootstrap.Modal.getInstance(document.getElementById('modalBulkImport')).hide();
+  
+  // Tạo hàng loạt dòng máy
+  imeis.forEach(imei => {
+    addMayRow(maSP, mauSac, dungLuong, giaNhap, imei);
+  });
+  
+  api.toast(`Đã tạo thành công ${imeis.length} dòng máy!`, 'success');
 }
 
 let rowPkCounter = 0;

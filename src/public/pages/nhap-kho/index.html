@@ -184,9 +184,14 @@
           <div class="card p-3 mb-4 border shadow-none">
             <div class="d-flex justify-content-between align-items-center mb-3">
               <h6 class="fw-bold mb-0 text-primary"><i class="bi bi-phone me-1"></i> 1. Danh Sách Máy Theo IMEI (Vật lý)</h6>
-              <button type="button" class="btn btn-sm btn-outline-primary" onclick="addMayRow()">
-                <i class="bi bi-plus-circle me-1"></i> Thêm Dòng Máy
-              </button>
+              <div>
+                <button type="button" class="btn btn-sm btn-outline-info me-2" onclick="openBulkImportModal()">
+                  <i class="bi bi-list-columns-reverse me-1"></i> Nhập Hàng Loạt
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="addMayRow()">
+                  <i class="bi bi-plus-circle me-1"></i> Thêm Dòng Máy
+                </button>
+              </div>
             </div>
             <div id="mayRowsContainer" class="d-flex flex-column gap-3">
               <!-- Dynamic rows -->
@@ -238,6 +243,46 @@
         <button type="button" class="btn btn-outline-primary" onclick="window.print()">
           <i class="bi bi-printer me-1"></i> In Phiếu Nhập Kho
         </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Nhập Hàng Loạt IMEI -->
+<div class="modal fade" id="modalBulkImport" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content card-custom">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold text-info"><i class="bi bi-list-columns-reverse"></i> Nhập Hàng Loạt IMEI</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Model Sản phẩm chung</label>
+          <select id="bulkInputSP" class="form-select form-select-sm"></select>
+        </div>
+        <div class="row g-2 mb-3">
+          <div class="col-6">
+            <label class="form-label fw-semibold">Màu sắc</label>
+            <input type="text" id="bulkInputMau" class="form-control form-control-sm" placeholder="VD: Đen">
+          </div>
+          <div class="col-6">
+            <label class="form-label fw-semibold">Dung lượng</label>
+            <input type="text" id="bulkInputDL" class="form-control form-control-sm" placeholder="VD: 256GB">
+          </div>
+          <div class="col-12 mt-2">
+            <label class="form-label fw-semibold">Giá nhập (VNĐ) <span class="text-danger">*</span></label>
+            <input type="number" id="bulkInputGia" class="form-control form-control-sm" placeholder="0">
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Danh sách IMEI (cách nhau bởi dấu phẩy hoặc xuống dòng)</label>
+          <textarea id="bulkInputImeis" class="form-control font-monospace" rows="6" placeholder="IMEI1&#10;IMEI2&#10;..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+        <button type="button" class="btn btn-info text-white" onclick="processBulkImport()">Tạo danh sách</button>
       </div>
     </div>
   </div>
