@@ -106,10 +106,10 @@ class SanPhamService extends BaseService {
 
     // Nếu có thay đổi giá, kiểm tra ràng buộc giá
     if (giaBan !== undefined || giaGoc !== undefined) {
-      const sp = await SanPham.findById(id);
+      const sp = await SanPham.findById(id).lean();
       if (!sp) throw this.createError('Sản phẩm không tồn tại', 404);
       const newGiaBan = giaBan !== undefined ? Number(giaBan) : sp.giaBan;
-      const newGiaGoc = giaGoc !== undefined ? Number(giaGoc) : sp.giaGoc;
+      const newGiaGoc = giaGoc !== undefined ? Number(giaGoc) : (sp.giaGoc || 0);
       if (newGiaBan <= newGiaGoc) {
         throw this.createError('Giá bán niêm yết phải lớn hơn Giá gốc', 400);
       }

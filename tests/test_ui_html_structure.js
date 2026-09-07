@@ -64,7 +64,7 @@ function runHtmlTests() {
       const href = match[1];
       // Chỉ kiểm tra file local (bắt đầu bằng / hoặc ./ hoặc css/)
       if (href.startsWith('/') || href.startsWith('./') || href.startsWith('css/')) {
-        const cleanHref = href.startsWith('/') ? href.slice(1) : href;
+        const cleanHref = (href.startsWith('/') ? href.slice(1) : href).split('?')[0];
         const targetDiskPath = path.join(publicDir, cleanHref);
         const exists = fs.existsSync(targetDiskPath);
         assert(exists, `[${relPath}] File CSS "${href}" tồn tại trên đĩa`);
@@ -76,7 +76,7 @@ function runHtmlTests() {
     for (const match of jsMatches) {
       const src = match[1];
       if (src.startsWith('/') || src.startsWith('./') || src.startsWith('js/')) {
-        const cleanSrc = src.startsWith('/') ? src.slice(1) : src;
+        const cleanSrc = (src.startsWith('/') ? src.slice(1) : src).split('?')[0];
         const targetDiskPath = path.join(publicDir, cleanSrc);
         const exists = fs.existsSync(targetDiskPath);
         assert(exists, `[${relPath}] File JS "${src}" tồn tại trên đĩa`);

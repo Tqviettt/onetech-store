@@ -9,9 +9,20 @@ const HINH_THUC_THANH_TOAN = {
 const TRANG_THAI_MAY = {
   CON_HANG: 'Con hang',
   DA_BAN: 'Da ban',
+  BAO_HANH: 'Bao hanh',
   LOI: 'Loi',
-  TRA_NCC: 'Tra NCC',
-  DANG_BAO_HANH: 'Dang bao hanh'
+  TRA_NCC: 'Tra NCC'
+};
+
+const TRANG_THAI_HOA_DON = {
+  CHO_THANH_TOAN: 'Cho thanh toan',
+  DA_THANH_TOAN: 'Da thanh toan',
+  DA_HUY: 'Da huy'
+};
+
+const TRANG_THAI_PHIEU_NHAP = {
+  NHAP: 'Nhap',
+  DA_NHAP_KHO: 'Da nhap kho'
 };
 
 const TRANG_THAI_CONG_NO = {
@@ -20,8 +31,20 @@ const TRANG_THAI_CONG_NO = {
   DA_TRA_HET: 'Da tra het'
 };
 
+const VAI_TRO = {
+  QUAN_LY: 'Quản lý',
+  THU_KHO: 'Thủ kho',
+  NV_BAN_HANG: 'NV bán hàng',
+  THU_NGAN: 'Thu ngân',
+  KE_TOAN: 'Kế toán',
+  KY_THUAT: 'Kỹ thuật'
+};
+
 module.exports = {
   HINH_THUC_THANH_TOAN,
   TRANG_THAI_MAY,
-  TRANG_THAI_CONG_NO
+  TRANG_THAI_HOA_DON,
+  TRANG_THAI_PHIEU_NHAP,
+  TRANG_THAI_CONG_NO,
+  VAI_TRO
 };

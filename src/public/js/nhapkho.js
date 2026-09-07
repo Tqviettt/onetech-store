@@ -141,6 +141,8 @@ function addMayRow(defaultSP = '', defaultMau = '', defaultDL = '', defaultGia =
     `<option value="${sp._id}" data-gia="${sp.giaGoc || 0}" data-dl="${escapeHtml(sp.dungLuong || '')}" ${sp._id === defaultSP ? 'selected' : ''}>${escapeHtml(sp.tenMay)}</option>`
   ).join('');
 
+  const formattedGia = defaultGia ? (typeof defaultGia === 'number' || /^\d+$/.test(String(defaultGia).trim()) ? String(defaultGia).replace(/\B(?=(\d{3})+(?!\d))/g, '.') : defaultGia) : '';
+
   const rowHtml = `
     <div class="row g-2 align-items-end p-2 bg-light rounded border" id="mayRow_${rowMayCounter}">
       <div class="col-12 col-md-3">
@@ -160,7 +162,7 @@ function addMayRow(defaultSP = '', defaultMau = '', defaultDL = '', defaultGia =
       </div>
       <div class="col-6 col-md-2">
         <label class="form-label small fw-semibold">Giá nhập (VNĐ)</label>
-        <input type="text" class="form-control form-control-sm format-currency input-may-gia" placeholder="0" oninput="maskCurrencyInput(this); recalcTotalPreview()" value="${defaultGia}">
+        <input type="text" class="form-control form-control-sm format-currency input-may-gia" placeholder="0" oninput="maskCurrencyInput(this); recalcTotalPreview()" value="${escapeHtml(formattedGia)}">
       </div>
       <div class="col-12 col-md-3">
         <label class="form-label small fw-semibold">Mã IMEI</label>

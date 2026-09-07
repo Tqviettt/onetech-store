@@ -65,7 +65,12 @@ Hệ thống được tổ chức theo mô hình **Layered MVC kết hợp OOP S
   - **Mobile Responsive Drawer:** Hỗ trợ menu trượt kèm lớp nền mờ `sidebar-overlay`, tự động đóng sidebar khi người dùng chọn chuyển trang trên thiết bị di động (< 992px).
   - **Top Navbar Đa năng:** Tích hợp đồng hồ thời gian thực (Live ticking clock), Avatar Initials theo họ tên và hiển thị Badge vai trò sắc nét.
   - **Universal Custom Dropdown Engine (`enhanceSelect()`):** Tự động chuyển đổi toàn bộ `<select>` HTML thành Custom Dropdown hiện đại, tích hợp icon ngữ nghĩa (danh mục, hãng, kho, vai trò...), ô tìm kiếm tùy chọn realtime và animation mượt mà.
-  - **Modal Xác nhận Xóa & Soft Delete Model Sản Phẩm (`src/public/pages/san-pham/`):** Tích hợp Modal Bootstrap `modalXacNhanXoa` phong cách hiện đại thay thế confirm thô sơ, hiệu ứng fade-out dòng tr sau khi ẩn và chuyển sang cơ chế Soft Delete (`status: false`) để bảo toàn lịch sử hóa đơn/IMEI.
+* **Tính năng Nhập hàng loạt IMEI & Ràng buộc Giá Gốc (`src/public/pages/nhap-kho/`, `src/services/SanPhamService.js`):**
+  - **Thêm trường Giá Gốc (`giaGoc`) & Dung Lượng (`dungLuong`):** Model `SanPham` được bổ sung để quản lý giá nhập buôn dự kiến và phiên bản bộ nhớ máy.
+  - **Ràng buộc nghiệp vụ Giá bán:** `SanPhamService` bắt buộc `giaBan > giaGoc` khi tạo mới và cập nhật, chống rủi ro bán lỗ.
+  - **Tự động điền Giá gốc & Dung lượng:** Khi lập phiếu nhập kho, việc chọn model sẽ tự động điền đơn giá và dung lượng.
+  - **Nhập Hàng Loạt IMEI (Bulk Import Modal):** Cho phép thủ kho quét mã vạch hoặc dán danh sách hàng chục IMEI cùng lúc để sinh các dòng nhập kho tự động.
+* **Modal Xác nhận Xóa & Soft Delete Model Sản Phẩm (`src/public/pages/san-pham/`):** Tích hợp Modal Bootstrap `modalXacNhanXoa` phong cách hiện đại thay thế confirm thô sơ, hiệu ứng fade-out dòng tr sau khi ẩn và chuyển sang cơ chế Soft Delete (`status: false`) để bảo toàn lịch sử hóa đơn/IMEI.
 * **Màn hình Đăng nhập Trực quan (`src/public/pages/login.html`):**
   - Hiệu ứng floating background orbs, logo chuyển động xoay tròn nhẹ khi tương tác, form focus nổi bật.
   - Hàng badge tài khoản demo tương tác cao giúp đăng nhập nhanh 1-click cho 6 vai trò.
@@ -97,8 +102,8 @@ onetech/
 ├── one_tech_store_erd.dbml              # Sơ đồ quan hệ thực thể ERD
 ├── README.md                            # Hướng dẫn cài đặt & tài khoản demo
 ├── PROJECT_WALKTHROUGH.md               # Bản Walkthrough kỹ thuật (File này)
-├── tests/                               # Bộ kiểm thử tự động (18 Test Suites, 682 Assertions)
-│   ├── run_all_tests.js                 # Master Test Runner chạy toàn bộ 18 suites
+├── tests/                               # Bộ kiểm thử tự động (20 Test Suites, 790 Assertions)
+│   ├── run_all_tests.js                 # Master Test Runner chạy toàn bộ 20 suites
 │   ├── test_tuan_module.js              # Kiểm thử 60 test cases luồng Bán hàng POS, IMEI, Bảo hành
 │   ├── test_tuan_tuan5_6_e2e.js         # Kiểm thử 33 test cases Luồng E2E tích hợp Bán hàng POS, Cọc, Bảo hành, KPI (Tuần 5-6)
 │   ├── test_viet_module.js              # Kiểm thử 32 test cases Đặt hàng trước, Cọc & Hoàn cọc (Tuần 3)

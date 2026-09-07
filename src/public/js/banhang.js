@@ -293,7 +293,7 @@ async function loadPosData() {
   if (resImei.success) {
     allAvailableImeis = Array.isArray(resImei.data) ? resImei.data : (resImei.data?.imeis || resImei.data?.data || []);
     allAvailableImeis.forEach(m => {
-      if (m.sanPham && m.sanPham.dungLuong) {
+      if (m.sanPham && m.sanPham.dungLuong && !m.sanPham.tenMay.includes(m.sanPham.dungLuong)) {
         m.sanPham.tenMay = m.sanPham.tenMay + ' ' + m.sanPham.dungLuong;
       }
     });
@@ -308,7 +308,7 @@ async function loadPosData() {
   if (resSp.success) {
     allSanPhams = Array.isArray(resSp.data) ? resSp.data : (resSp.data?.sanPhams || resSp.data?.data || []);
     allSanPhams.forEach(sp => {
-      if (sp.dungLuong) {
+      if (sp.dungLuong && !sp.tenMay.includes(sp.dungLuong)) {
         sp.tenMay = sp.tenMay + ' ' + sp.dungLuong;
       }
     });
@@ -622,7 +622,7 @@ async function loadPreOrders(search = '') {
 
   availablePreOrders = res.data || [];
   availablePreOrders.forEach(d => {
-    if (d.sanPham && d.sanPham.dungLuong) {
+    if (d.sanPham && d.sanPham.dungLuong && !d.sanPham.tenMay.includes(d.sanPham.dungLuong)) {
       d.sanPham.tenMay = d.sanPham.tenMay + ' ' + d.sanPham.dungLuong;
     }
   });
@@ -860,7 +860,7 @@ async function viewInvoiceDetail(id) {
   const { hoaDon, danhSachMay, danhSachPhuKien, phieuXuatKho } = res;
   if (danhSachMay) {
     danhSachMay.forEach(m => {
-      if (m.sanPham && m.sanPham.dungLuong) {
+      if (m.sanPham && m.sanPham.dungLuong && !m.sanPham.tenMay.includes(m.sanPham.dungLuong)) {
         m.sanPham.tenMay = m.sanPham.tenMay + ' ' + m.sanPham.dungLuong;
       }
     });

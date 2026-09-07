@@ -475,6 +475,44 @@ async function runTests() {
     // Dọn dẹp bản ghi test
     await SanPham.findByIdAndDelete(spTestXoa._id);
 
+    // Test Ràng buộc Giá Gốc & Dung Lượng (PR #19)
+    console.log('\n--- TEST BỔ SUNG PR #19: Ràng buộc Giá Gốc & Giá Bán ---');
+    let errGiaBanBeHonGiaGoc = null;
+    try {
+      await SanPhamService.createSanPham({
+        tenMay: 'Test Invalid Gia PR19',
+        danhMuc: dmFirst._id,
+        hang: 'Apple',
+        giaGoc: 30000000,
+        giaBan: 25000000 // Giá bán < Giá gốc -> Chặn
+      });
+    } catch (e) {
+      errGiaBanBeHonGiaGoc = e;
+    }
+    assert(errGiaBanBeHonGiaGoc !== null && errGiaBanBeHonGiaGoc.statusCode === 400, 'Chặn tạo sản phẩm khi Giá bán <= Giá gốc (400 Bad Request)');
+    assert(errGiaBanBeHonGiaGoc && errGiaBanBeHonGiaGoc.message.includes('Giá bán niêm yết phải lớn hơn Giá gốc'), 'Thông báo lỗi chuẩn xác ràng buộc giá');
+
+    const spHopLePR19 = await SanPhamService.createSanPham({
+      tenMay: 'Test Hop Le PR19',
+      danhMuc: dmFirst._id,
+      hang: 'Apple',
+      giaGoc: 20000000,
+      giaBan: 28000000,
+      dungLuong: '256GB'
+    });
+    assert(spHopLePR19.giaGoc === 20000000, 'Lưu đúng trường giaGoc trong database');
+    assert(spHopLePR19.dungLuong === '256GB', 'Lưu đúng trường dungLuong trong database');
+
+    let errUpdateGia = null;
+    try {
+      await SanPhamService.updateSanPham(spHopLePR19._id, { giaBan: 19000000 }); // nhỏ hơn giaGoc hiện tại (20tr)
+    } catch (e) {
+      errUpdateGia = e;
+    }
+    assert(errUpdateGia !== null && errUpdateGia.statusCode === 400, 'Chặn cập nhật sản phẩm khi giá bán mới <= giá gốc');
+
+    await SanPham.findByIdAndDelete(spHopLePR19._id);
+
     // 4. Máy IMEI
     const imeiRes = await MayImeiService.getAllImeis();
     assert(Array.isArray(imeiRes.imeis), 'MayImeiService.getAllImeis trả về mảng imeis');
