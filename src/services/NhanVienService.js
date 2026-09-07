@@ -51,7 +51,7 @@ class NhanVienService extends BaseService {
   }
 
   async createNhanVien(payload = {}) {
-    const { hoTen, sdt, diaChi, email, vaiTro, tenDangNhap, matKhau } = payload;
+    const { hoTen, sdt, diaChi, email, cccd, vaiTro, tenDangNhap, matKhau } = payload;
 
     if (!hoTen || !vaiTro || !tenDangNhap || !matKhau) {
       throw this.createError('Vui lòng điền đầy đủ Họ tên, Vai trò, Tên đăng nhập và Mật khẩu', 400);
@@ -73,6 +73,16 @@ class NhanVienService extends BaseService {
       }
     }
 
+    if (cccd && cccd.trim() !== '') {
+      if (!/^[0-9]{12}$/.test(cccd.trim())) {
+        throw this.createError('Căn cước công dân không hợp lệ (yêu cầu 12 chữ số)', 400);
+      }
+      const existCccd = await NhanVien.findOne({ cccd: cccd.trim() });
+      if (existCccd) {
+        throw this.createError('Căn cước công dân đã được đăng ký cho một nhân viên khác', 409);
+      }
+    }
+
     const existing = await NhanVien.findOne({ tenDangNhap: tenDangNhap.trim() });
     if (existing) {
       throw this.createError('Tên đăng nhập đã tồn tại trong hệ thống', 409);
@@ -83,6 +93,7 @@ class NhanVienService extends BaseService {
       sdt: sdt.trim(),
       diaChi: formatName(diaChi),
       email: email ? email.trim() : '',
+      cccd: cccd ? cccd.trim() : '',
       vaiTro,
       tenDangNhap: tenDangNhap.trim(),
       matKhau
@@ -97,7 +108,7 @@ class NhanVienService extends BaseService {
     if (!mongoose.Types.ObjectId.isValid(id)) {
       throw this.createError('ID nhân viên không hợp lệ', 400);
     }
-    const { hoTen, sdt, diaChi, email, vaiTro, tenDangNhap, matKhau, trangThai } = payload;
+    const { hoTen, sdt, diaChi, email, cccd, vaiTro, tenDangNhap, matKhau, trangThai } = payload;
 
     const nv = await NhanVien.findById(id);
     if (!nv) {
@@ -130,10 +141,21 @@ class NhanVienService extends BaseService {
       }
     }
 
+    if (cccd && cccd.trim() !== '') {
+      if (!/^[0-9]{12}$/.test(cccd.trim())) {
+        throw this.createError('Căn cước công dân không hợp lệ (yêu cầu 12 chữ số)', 400);
+      }
+      const existCccd = await NhanVien.findOne({ cccd: cccd.trim(), _id: { $ne: id } });
+      if (existCccd) {
+        throw this.createError('Căn cước công dân đã được đăng ký cho một nhân viên khác', 409);
+      }
+    }
+
     if (hoTen) nv.hoTen = formatName(hoTen);
     if (sdt !== undefined) nv.sdt = sdt.trim();
     if (diaChi !== undefined) nv.diaChi = formatName(diaChi);
     if (email !== undefined) nv.email = email.trim();
+    if (cccd !== undefined) nv.cccd = cccd.trim();
     if (vaiTro) nv.vaiTro = vaiTro;
     if (trangThai) nv.trangThai = trangThai;
     if (matKhau && matKhau.trim()) {

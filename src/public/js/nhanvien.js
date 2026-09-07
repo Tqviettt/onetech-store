@@ -160,6 +160,9 @@ async function initNhanVienForm() {
       document.getElementById('inputTenDangNhap').value = nv.tenDangNhap || '';
       document.getElementById('selectVaiTro').value = nv.vaiTro || 'NV bán hàng';
       document.getElementById('selectTrangThai').value = nv.trangThai || 'Hoạt động';
+      if (document.getElementById('inputEmail')) document.getElementById('inputEmail').value = nv.email || '';
+      if (document.getElementById('inputCccd')) document.getElementById('inputCccd').value = nv.cccd || '';
+      if (document.getElementById('inputDiaChi')) document.getElementById('inputDiaChi').value = nv.diaChi || '';
     } else {
       showToast('Không tìm thấy thông tin nhân viên', 'danger');
     }
@@ -178,6 +181,10 @@ async function initNhanVienForm() {
       const vaiTro = document.getElementById('selectVaiTro').value;
       const matKhau = document.getElementById('inputMatKhau').value;
       const trangThai = document.getElementById('selectTrangThai')?.value;
+      
+      const email = document.getElementById('inputEmail') ? document.getElementById('inputEmail').value.trim() : '';
+      const cccd = document.getElementById('inputCccd') ? document.getElementById('inputCccd').value.trim() : '';
+      const diaChi = document.getElementById('inputDiaChi') ? document.getElementById('inputDiaChi').value.trim() : '';
 
       if (!hoTen || !vaiTro || (!isEdit && (!tenDangNhap || !matKhau))) {
         showToast('Vui lòng điền đầy đủ các thông tin bắt buộc', 'danger');
@@ -189,6 +196,9 @@ async function initNhanVienForm() {
         res = await api.put(`/nhan-vien/${editId}`, {
           hoTen,
           sdt,
+          email,
+          cccd,
+          diaChi,
           vaiTro,
           matKhau,
           trangThai
@@ -197,6 +207,9 @@ async function initNhanVienForm() {
         res = await api.post('/nhan-vien', {
           hoTen,
           sdt,
+          email,
+          cccd,
+          diaChi,
           tenDangNhap,
           vaiTro,
           matKhau
