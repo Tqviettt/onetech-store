@@ -63,6 +63,18 @@ class KhachHangService extends BaseService {
       throw this.createError('Số điện thoại không hợp lệ (yêu cầu 10 chữ số)', 400);
     }
 
+    const existPhone = await KhachHang.findOne({ sdt: sdt.trim() });
+    if (existPhone) {
+      throw this.createError('Số điện thoại đã được đăng ký cho một khách hàng khác', 409);
+    }
+
+    if (email && email.trim() !== '') {
+      const existEmail = await KhachHang.findOne({ email: email.trim() });
+      if (existEmail) {
+        throw this.createError('Email đã được đăng ký cho một khách hàng khác', 409);
+      }
+    }
+
     return await KhachHang.create({
       hoTen: formatName(hoTen),
       sdt: sdt.trim(),
@@ -76,6 +88,20 @@ class KhachHangService extends BaseService {
     const { hoTen, sdt, diaChi, email, status } = payload;
     if (sdt && !validatePhone(sdt)) {
       throw this.createError('Số điện thoại không hợp lệ (yêu cầu 10 chữ số)', 400);
+    }
+
+    if (sdt) {
+      const existPhone = await KhachHang.findOne({ sdt: sdt.trim(), _id: { $ne: id } });
+      if (existPhone) {
+        throw this.createError('Số điện thoại đã được đăng ký cho một khách hàng khác', 409);
+      }
+    }
+
+    if (email && email.trim() !== '') {
+      const existEmail = await KhachHang.findOne({ email: email.trim(), _id: { $ne: id } });
+      if (existEmail) {
+        throw this.createError('Email đã được đăng ký cho một khách hàng khác', 409);
+      }
     }
     
     const updated = await KhachHang.findByIdAndUpdate(

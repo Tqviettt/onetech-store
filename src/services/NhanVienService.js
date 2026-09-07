@@ -61,6 +61,18 @@ class NhanVienService extends BaseService {
       throw this.createError('Số điện thoại không hợp lệ (yêu cầu 10 chữ số)', 400);
     }
 
+    const existPhone = await NhanVien.findOne({ sdt: sdt.trim() });
+    if (existPhone) {
+      throw this.createError('Số điện thoại đã được đăng ký cho một nhân viên khác', 409);
+    }
+
+    if (email && email.trim() !== '') {
+      const existEmail = await NhanVien.findOne({ email: email.trim() });
+      if (existEmail) {
+        throw this.createError('Email đã được đăng ký cho một nhân viên khác', 409);
+      }
+    }
+
     const existing = await NhanVien.findOne({ tenDangNhap: tenDangNhap.trim() });
     if (existing) {
       throw this.createError('Tên đăng nhập đã tồn tại trong hệ thống', 409);
@@ -102,6 +114,20 @@ class NhanVienService extends BaseService {
 
     if (sdt && !validatePhone(sdt)) {
       throw this.createError('Số điện thoại không hợp lệ (yêu cầu 10 chữ số)', 400);
+    }
+
+    if (sdt) {
+      const existPhone = await NhanVien.findOne({ sdt: sdt.trim(), _id: { $ne: id } });
+      if (existPhone) {
+        throw this.createError('Số điện thoại đã được đăng ký cho một nhân viên khác', 409);
+      }
+    }
+
+    if (email && email.trim() !== '') {
+      const existEmail = await NhanVien.findOne({ email: email.trim(), _id: { $ne: id } });
+      if (existEmail) {
+        throw this.createError('Email đã được đăng ký cho một nhân viên khác', 409);
+      }
     }
 
     if (hoTen) nv.hoTen = formatName(hoTen);
